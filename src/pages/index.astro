@@ -46,19 +46,6 @@ const recentPosts = [
   }
 ];
 
-const recentReviews = [
-  {
-    title: {
-      english: "The Ancient Magus' Bride",
-      japanese: "魔法使いの嫁"
-    },
-    cover: "https://cdn.myanimelist.net/images/anime/1140/124500.jpg",
-    rating: 10,
-    reviewDate: "2024-01-12",
-    excerpt: "A masterful blend of British folklore and modern magical storytelling that creates a uniquely enchanting atmosphere.",
-    slug: "ancient-magus-bride"
-  }
-];
 ---
 
 <Layout title="Home">
@@ -91,12 +78,7 @@ const recentReviews = [
 
       <div>
         <section>
-          <h2 class="text-lg font-mono text-accent mb-4">Recent Reviews</h2>
-          <div class="grid gap-4">
-            {recentReviews.map(anime => (
-              <ReviewCard anime={anime} />
-            ))}
-          </div>
+          <h2 class="text-lg font-mono text-accent mb-4">Recent shows</h2>
         </section>
       </div>
     </div>

@@ -43,7 +43,7 @@ export const posts: Post[] = [
     type: 'review',
     tags: ["fantasy", "romance", "magic"],
     excerpt: "A masterful blend of British folklore and modern magical storytelling that creates a uniquely enchanting atmosphere.",
-    heroImage: "https://cdn.myanimelist.net/images/anime/1140/124500.jpg",
+    heroImage: "https://images3.alphacoders.com/880/880728.jpg",
     content: `# The Ancient Magus' Bride Review
 
 The Ancient Magus' Bride represents a masterful fusion of British folklore and contemporary magical storytelling. Set against the backdrop of rural England, the series weaves together elements of traditional fairy tales with modern narrative sensibilities, creating something both timeless and fresh.
@@ -61,7 +61,7 @@ At its core, the series explores themes of belonging, growth, and the nature of 
         english: "The Ancient Magus' Bride",
         japanese: "魔法使いの嫁"
       },
-      cover: "https://cdn.myanimelist.net/images/anime/1140/124500.jpg",
+      cover: "https://nyaa.shikimori.one/uploads/poster/animes/35062/main_2x-2233d89d532a3cef85e50047bdf59381.webp",
       status: "completed",
       progress: 24,
       totalEpisodes: 24,
@@ -89,14 +89,14 @@ At its core, the series explores themes of belonging, growth, and the nature of 
       {
         name: "Chise Hatori",
         role: "Protagonist",
-        image: "https://cdn.myanimelist.net/images/characters/14/349591.jpg",
+        image: "https://i.pinimg.com/736x/57/c1/8f/57c18f2ec94a8a4ff3bf02069f21acb6.jpg",
         description: "A young mage in training with a unique connection to magic.",
         traits: ["determined", "kind", "resilient"]
       },
       {
         name: "Elias Ainsworth",
         role: "Deuteragonist",
-        image: "https://cdn.myanimelist.net/images/characters/8/349590.jpg",
+        image: "https://i.pinimg.com/originals/63/ca/04/63ca04210b2f973e6a51bd5cb56bb610.jpg",
         description: "A powerful and mysterious mage who takes Chise as his apprentice.",
         traits: ["mysterious", "protective", "learning humanity"]
       }

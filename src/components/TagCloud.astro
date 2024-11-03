@@ -1,0 +1,34 @@
+---
+interface Props {
+  tags: {
+    name: string;
+    count: number;
+  }[];
+}
+
+const { tags } = Astro.props;
+
+// Calculate tag sizes based on count
+const maxCount = Math.max(...tags.map(t => t.count));
+const minCount = Math.min(...tags.map(t => t.count));
+const getSizeClass = (count: number) => {
+  const normalized = (count - minCount) / (maxCount - minCount);
+  if (normalized < 0.2) return 'text-sm';
+  if (normalized < 0.4) return 'text-base';
+  if (normalized < 0.6) return 'text-lg';
+  if (normalized < 0.8) return 'text-xl';
+  return 'text-2xl';
+};
+---
+
+<div class="flex flex-wrap gap-3 items-baseline">
+  {tags.map(tag => (
+    <a
+      href={`/tags/${tag.name}`}
+      class={`${getSizeClass(tag.count)} font-mono text-accent/70 hover:text-accent transition-colors`}
+    >
+      #{tag.name}
+      <span class="text-xs text-main/40">({tag.count})</span>
+    </a>
+  ))}
+</div>

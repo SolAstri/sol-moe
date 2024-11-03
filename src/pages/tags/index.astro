@@ -1,0 +1,36 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import TagCloud from '../../components/TagCloud.astro';
+
+const posts = [
+  {
+    title: "The Evolution of Time Travel in Anime",
+    tags: ["analysis", "sci-fi", "steins-gate"]
+  },
+  {
+    title: "Visual Storytelling in Spice and Wolf",
+    tags: ["analysis", "romance", "economics"]
+  }
+];
+
+const tagCounts = posts.flatMap(post => post.tags)
+  .reduce((acc, tag) => {
+    acc[tag] = (acc[tag] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+const tags = Object.entries(tagCounts)
+  .map(([name, count]) => ({ name, count }))
+  .sort((a, b) => b.count - a.count);
+---
+
+<Layout title="Tags">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <header class="mb-12">
+      <h1 class="text-3xl font-medium mb-4">Tags</h1>
+      <p class="text-main/60 font-mono">Browse posts by topic</p>
+    </header>
+
+    <TagCloud tags={tags} />
+  </div>
+</Layout>

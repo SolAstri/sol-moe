@@ -1,0 +1,104 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Timeline from '../components/interactive/Timeline.astro';
+
+const timeline = [
+  {
+    date: "2020",
+    title: "Journey Begins",
+    description: "Started sol.moe as a personal space to explore the intersection of technology and anime."
+  },
+  {
+    date: "2021",
+    title: "Content Evolution",
+    description: "Expanded focus to include in-depth analysis of storytelling techniques and visual narratives."
+  },
+  {
+    date: "2022",
+    title: "Community Growth",
+    description: "Began collaborating with other creators and building a community around thoughtful anime discussion."
+  },
+  {
+    date: "2024",
+    title: "New Direction",
+    description: "Redesigned the site with a focus on detailed reviews and technical analysis of anime production."
+  }
+];
+---
+
+<Layout title="About">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <header class="mb-12">
+      <h1 class="text-3xl font-medium mb-4">About sol.moe</h1>
+      <p class="text-xl text-main/70 leading-relaxed">
+        Exploring anime through the lens of technology, storytelling, and cultural analysis.
+      </p>
+    </header>
+
+    <div class="prose prose-invert prose-accent max-w-none mb-12">
+      <p>
+        sol.moe is my personal space for exploring the intersection of technology, storytelling, 
+        and culture through the lens of Japanese media. Here, my background in linguistics and 
+        computer science meets my love for narrative analysis.
+      </p>
+
+      <p>
+        You'll find data-driven breakdowns of storytelling patterns alongside thoughtful essays 
+        on translation and cultural adaptation. The blog weaves together technical insights with 
+        personal reflections on how these stories connect to my journey through technology, art, 
+        and language.
+      </p>
+
+      <h2>Focus Areas</h2>
+      <ul>
+        <li>Technical analysis of animation techniques</li>
+        <li>Narrative structure and storytelling patterns</li>
+        <li>Cultural context and adaptation</li>
+        <li>Intersection of technology and creativity</li>
+      </ul>
+
+      <h2>Site Features</h2>
+      <ul>
+        <li>Detailed anime reviews with technical breakdowns</li>
+        <li>Analysis of storytelling techniques and visual narratives</li>
+        <li>Personal library tracking with statistics</li>
+        <li>Blog posts exploring various aspects of anime and technology</li>
+      </ul>
+    </div>
+
+    <section class="mb-12">
+      <h2 class="text-2xl font-medium mb-6">Timeline</h2>
+      <Timeline events={timeline} />
+    </section>
+
+    <section class="bg-semi-transparent rounded-lg p-6">
+      <h2 class="text-2xl font-medium mb-4">Connect</h2>
+      <div class="grid sm:grid-cols-2 gap-6">
+        <a 
+          href="https://github.com" 
+          class="flex items-center gap-3 p-4 rounded-lg bg-accent/5 hover:bg-accent/10 transition-colors"
+        >
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
+          </svg>
+          <div>
+            <div class="font-medium">GitHub</div>
+            <div class="text-sm text-main/60">Check out my projects</div>
+          </div>
+        </a>
+        <a 
+          href="https://twitter.com" 
+          class="flex items-center gap-3 p-4 rounded-lg bg-accent/5 hover:bg-accent/10 transition-colors"
+        >
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+          </svg>
+          <div>
+            <div class="font-medium">Twitter</div>
+            <div class="text-sm text-main/60">Follow for updates</div>
+          </div>
+        </a>
+      </div>
+    </section>
+  </div>
+</Layout>

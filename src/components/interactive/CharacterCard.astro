@@ -1,0 +1,38 @@
+---
+interface Props {
+  name: string;
+  image: string;
+  role: string;
+  description: string;
+  traits?: string[];
+}
+
+const { name, image, role, description, traits = [] } = Astro.props;
+---
+
+<div class="bg-semi-transparent rounded-lg overflow-hidden hover:ring-1 hover:ring-accent transition-all">
+  <div class="aspect-[3/4] relative">
+    <img 
+      src={image} 
+      alt={name}
+      class="w-full h-full object-cover"
+    />
+    <div class="absolute inset-0 bg-gradient-to-t from-main-bg/90 to-transparent"></div>
+    <div class="absolute bottom-0 left-0 right-0 p-4">
+      <h3 class="text-lg font-medium mb-1">{name}</h3>
+      <p class="text-sm font-mono text-accent/80">{role}</p>
+    </div>
+  </div>
+  <div class="p-4 pt-2">
+    <p class="text-sm text-main/70 mb-3">{description}</p>
+    {traits.length > 0 && (
+      <div class="flex flex-wrap gap-2">
+        {traits.map(trait => (
+          <span class="text-xs font-mono bg-accent/10 px-2 py-0.5 rounded-full text-accent/80">
+            {trait}
+          </span>
+        ))}
+      </div>
+    )}
+  </div>
+</div>

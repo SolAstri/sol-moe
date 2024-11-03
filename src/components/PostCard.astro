@@ -1,0 +1,96 @@
+---
+import Rating from './interactive/Rating.astro';
+
+interface Props {
+  post: {
+    title: string;
+    date: string;
+    excerpt: string;
+    slug: string;
+    tags: string[];
+    type: 'analysis' | 'review';
+    readingTime?: string;
+    heroImage?: string;
+    anime?: {
+      title: {
+        english: string;
+        japanese: string;
+      };
+      rating: number;
+      cover: string;
+    };
+    stats?: {
+      story: number;
+      animation: number;
+      sound: number;
+      characters: number;
+      enjoyment: number;
+    };
+  };
+}
+
+const { post } = Astro.props;
+---
+
+<article class="group">
+  <a 
+    href={`/blog/${post.slug}`} 
+    class="block bg-semi-transparent rounded-lg p-6 hover:ring-1 hover:ring-accent transition-all relative overflow-hidden"
+  >
+    <!-- Background grid pattern -->
+    <div class="absolute inset-0 bg-grid-pattern opacity-5" style="--grid: var(--tw-colors-grid); background-size: 20px 20px;"></div>
+    
+    <!-- Content -->
+    <div class="relative">
+      <div class="flex flex-wrap items-center gap-3 font-mono text-sm mb-3">
+        <time class="text-accent/80">{post.date}</time>
+        {post.readingTime && (
+          <>
+            <span class="text-accent/40">•</span>
+            <span class="text-main/60">{post.readingTime}</span>
+          </>
+        )}
+        <span class="text-accent/40">•</span>
+        <span class="text-main/60 capitalize">{post.type}</span>
+      </div>
+
+      <h2 class="text-2xl font-medium tracking-tight group-hover:text-accent transition-colors mb-3">
+        {post.title}
+      </h2>
+
+      {post.type === 'review' && post.anime && (
+        <div class="flex items-start gap-4 mb-4">
+          <img 
+            src={post.anime.cover} 
+            alt={post.anime.title.english}
+            class="w-24 aspect-[7/10] object-cover rounded border border-accent/20 group-hover:border-accent/40 transition-all group-hover:animate-float"
+          />
+          <div>
+            <p class="text-sm font-mono text-accent/80">{post.anime.title.japanese}</p>
+            <div class="mt-2">
+              <Rating value={post.anime.rating} size="sm" />
+            </div>
+          </div>
+        </div>
+      )}
+      
+      <p class="text-main/70 leading-relaxed mb-4">{post.excerpt}</p>
+      
+      <div class="flex flex-wrap gap-2">
+        {post.tags.map(tag => (
+          <a 
+            href={`/tags/${tag}`}
+            class="text-xs font-mono bg-accent/10 px-2 py-0.5 rounded-full text-accent/80 hover:bg-accent/20 transition-colors"
+          >
+            #{tag}
+          </a>
+        ))}
+      </div>
+      
+      <div class="mt-4 font-mono text-sm text-accent group-hover:text-accent/80 transition-colors flex items-center gap-2">
+        Read {post.type === 'review' ? 'review' : 'post'}
+        <span class="text-lg leading-none transition-transform group-hover:translate-x-1">&rarr;</span>
+      </div>
+    </div>
+  </a>
+</article>

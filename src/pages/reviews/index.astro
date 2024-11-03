@@ -1,0 +1,105 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import ReviewCard from '../../components/ReviewCard.astro';
+import TagFilter from '../../components/TagFilter.astro';
+import Stats from '../../components/Stats.astro';
+
+const reviews = [
+  {
+    title: {
+      english: "The Ancient Magus' Bride",
+      japanese: "魔法使いの嫁"
+    },
+    cover: "https://cdn.myanimelist.net/images/anime/1140/124500.jpg",
+    rating: 10,
+    reviewDate: "2024-01-12",
+    excerpt: "A masterful blend of British folklore and modern magical storytelling.",
+    slug: "ancient-magus-bride",
+    tags: ["fantasy", "romance", "magic"],
+    stats: {
+      story: 10,
+      animation: 9,
+      sound: 10,
+      characters: 10,
+      enjoyment: 10
+    }
+  },
+  {
+    title: {
+      english: "Steins;Gate",
+      japanese: "シュタインズ・ゲート"
+    },
+    cover: "https://cdn.myanimelist.net/images/anime/5/73199.jpg",
+    rating: 10,
+    reviewDate: "2024-01-05",
+    excerpt: "A masterclass in time travel narrative and character development.",
+    slug: "steins-gate",
+    tags: ["sci-fi", "thriller", "time-travel"],
+    stats: {
+      story: 10,
+      animation: 9,
+      sound: 9,
+      characters: 10,
+      enjoyment: 10
+    }
+  }
+];
+
+const allTags = [...new Set(reviews.flatMap(review => review.tags))];
+
+const stats = {
+  totalReviews: reviews.length,
+  averageRating: reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length,
+  byGenre: allTags.reduce((acc, tag) => {
+    acc[tag] = reviews.filter(r => r.tags.includes(tag)).length;
+    return acc;
+  }, {} as Record<string, number>)
+};
+---
+
+<Layout title="Reviews">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <header class="mb-12">
+      <h1 class="text-3xl font-medium mb-4">Anime Reviews</h1>
+      <p class="text-main/60 font-mono mb-8">{reviews.length} detailed reviews</p>
+      
+      <div class="grid sm:grid-cols-2 gap-6 mb-8">
+        <div class="bg-semi-transparent rounded-lg p-4">
+          <h2 class="text-sm font-mono text-accent mb-3">Review Stats</h2>
+          <dl class="space-y-2 text-sm">
+            <div class="flex justify-between">
+              <dt class="text-main/60">Total Reviews</dt>
+              <dd class="font-mono">{stats.totalReviews}</dd>
+            </div>
+            <div class="flex justify-between">
+              <dt class="text-main/60">Average Rating</dt>
+              <dd class="font-mono">{stats.averageRating.toFixed(1)}/10</dd>
+            </div>
+          </dl>
+        </div>
+        
+        <div class="bg-semi-transparent rounded-lg p-4">
+          <h2 class="text-sm font-mono text-accent mb-3">By Genre</h2>
+          <div class="space-y-2 text-sm">
+            {Object.entries(stats.byGenre).map(([genre, count]) => (
+              <div class="flex justify-between">
+                <span class="text-main/60">#{genre}</span>
+                <span class="font-mono">{count}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      
+      <TagFilter tags={allTags} activeTags={[]} />
+    </header>
+
+    <div class="grid gap-6" data-reviews>
+      {reviews.map(review => (
+        <div data-tags={review.tags.join(',')}>
+          <ReviewCard anime={review} detailed />
+        </div>
+      ))}
+    </div>
+  </div>
+</Layout>

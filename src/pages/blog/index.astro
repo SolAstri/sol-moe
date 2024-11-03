@@ -1,0 +1,78 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import BlogPost from '../../components/BlogPost.astro';
+import TagFilter from '../../components/TagFilter.astro';
+import { posts } from '../../data/posts';
+
+const allTags = [...new Set(posts.flatMap(post => post.tags))];
+
+const stats = {
+  totalPosts: posts.length,
+  byType: {
+    review: posts.filter(p => p.type === 'review').length,
+    analysis: posts.filter(p => p.type === 'analysis').length
+  },
+  byTag: allTags.reduce((acc, tag) => {
+    acc[tag] = posts.filter(p => p.tags.includes(tag)).length;
+    return acc;
+  }, {} as Record<string, number>)
+};
+---
+
+<Layout title="Blog">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <header class="mb-6">
+      <h1 class="text-3xl font-medium mb-2">Blog</h1>
+      <p class="text-main/60 font-mono mb-4">Reviews, analysis, and thoughts on anime</p>
+      
+      <div class="grid sm:grid-cols-2 gap-4 mb-4">
+        <div class="bg-semi-transparent rounded-lg p-4">
+          <h2 class="text-sm font-mono text-accent mb-2">Post Stats</h2>
+          <dl class="space-y-1 text-sm">
+            <div class="flex justify-between">
+              <dt class="text-main/60">Total Posts</dt>
+              <dd class="font-mono">{stats.totalPosts}</dd>
+            </div>
+            <div class="flex justify-between">
+              <dt class="text-main/60">Reviews</dt>
+              <dd class="font-mono">{stats.byType.review}</dd>
+            </div>
+            <div class="flex justify-between">
+              <dt class="text-main/60">Analysis</dt>
+              <dd class="font-mono">{stats.byType.analysis}</dd>
+            </div>
+          </dl>
+        </div>
+        
+        <div class="bg-semi-transparent rounded-lg p-4">
+          <h2 class="text-sm font-mono text-accent mb-2">Popular Tags</h2>
+          <div class="space-y-1 text-sm">
+            {Object.entries(stats.byTag)
+              .sort(([,a], [,b]) => b - a)
+              .slice(0, 5)
+              .map(([tag, count]) => (
+                <div class="flex justify-between">
+                  <span class="text-main/60">#{tag}</span>
+                  <span class="font-mono">{count}</span>
+                </div>
+              ))
+            }
+          </div>
+        </div>
+      </div>
+      
+      <TagFilter tags={allTags} activeTags={[]} />
+    </header>
+
+    <div class="space-y-3" data-posts>
+      {posts
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .map(post => (
+          <div data-tags={post.tags.join(',')}>
+            <BlogPost {...post} />
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</Layout>

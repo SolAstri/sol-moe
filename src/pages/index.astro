@@ -1,0 +1,104 @@
+---
+import Layout from '../layouts/Layout.astro';
+import AnimeCard from '../components/AnimeCard.astro';
+import Stats from '../components/Stats.astro';
+import BlogPost from '../components/BlogPost.astro';
+import ReviewCard from '../components/ReviewCard.astro';
+
+const stats = {
+  watching: 25,
+  completed: 206,
+  planned: 236,
+  onHold: 42,
+  dropped: 11,
+  totalEpisodes: 4892
+};
+
+const currentlyWatching = [
+  {
+    title: {
+      romaji: "Steins;Gate",
+      english: "Steins;Gate",
+      japanese: "シュタインズ・ゲート"
+    },
+    cover: "https://cdn.myanimelist.net/images/anime/5/73199.jpg",
+    status: "watching",
+    progress: 12,
+    totalEpisodes: 24,
+    rating: 10
+  }
+];
+
+const recentPosts = [
+  {
+    title: "The Evolution of Time Travel in Anime",
+    date: "2024-01-15",
+    excerpt: "From Steins;Gate to The Girl Who Leapt Through Time, exploring how anime handles temporal mechanics and their narrative implications.",
+    slug: "time-travel-in-anime",
+    tags: ["analysis", "sci-fi", "steins-gate"]
+  },
+  {
+    title: "Visual Storytelling in Spice and Wolf",
+    date: "2024-01-10",
+    excerpt: "Breaking down how Spice and Wolf uses subtle visual cues and medieval economics to build its unique romantic narrative.",
+    slug: "spice-and-wolf-visual-storytelling",
+    tags: ["analysis", "romance", "economics"]
+  }
+];
+
+const recentReviews = [
+  {
+    title: {
+      english: "The Ancient Magus' Bride",
+      japanese: "魔法使いの嫁"
+    },
+    cover: "https://cdn.myanimelist.net/images/anime/1140/124500.jpg",
+    rating: 10,
+    reviewDate: "2024-01-12",
+    excerpt: "A masterful blend of British folklore and modern magical storytelling that creates a uniquely enchanting atmosphere.",
+    slug: "ancient-magus-bride"
+  }
+];
+---
+
+<Layout title="Home">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-1 lg:grid-cols-[2fr,1fr] gap-8">
+      <div>
+        <section class="mb-12">
+          <h2 class="text-lg font-mono text-accent mb-4">Statistics</h2>
+          <Stats stats={stats} />
+        </section>
+
+        <section class="mb-12">
+          <h2 class="text-lg font-mono text-accent mb-4">Currently Watching</h2>
+          <div class="grid gap-4">
+            {currentlyWatching.map(anime => (
+              <AnimeCard {...anime} />
+            ))}
+          </div>
+        </section>
+
+        <section>
+          <h2 class="text-lg font-mono text-accent mb-4">Recent Posts</h2>
+          <div>
+            {recentPosts.map(post => (
+              <BlogPost {...post} />
+            ))}
+          </div>
+        </section>
+      </div>
+
+      <div>
+        <section>
+          <h2 class="text-lg font-mono text-accent mb-4">Recent Reviews</h2>
+          <div class="grid gap-4">
+            {recentReviews.map(anime => (
+              <ReviewCard anime={anime} />
+            ))}
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</Layout>

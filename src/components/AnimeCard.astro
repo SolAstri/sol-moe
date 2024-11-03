@@ -1,0 +1,84 @@
+---
+interface Props {
+  title: {
+    romaji: string;
+    english: string;
+    japanese: string;
+  };
+  cover: string;
+  status: 'watching' | 'completed' | 'planned' | 'on_hold' | 'dropped';
+  progress: number;
+  totalEpisodes: number;
+  rating?: number;
+}
+
+const { title, cover, status, progress, totalEpisodes, rating } = Astro.props;
+
+const statusColors = {
+  watching: 'bg-blue-900/20 text-blue-400 border-blue-400/20',
+  completed: 'bg-green-900/20 text-green-400 border-green-400/20',
+  planned: 'bg-gray-800/20 text-gray-400 border-gray-400/20',
+  on_hold: 'bg-yellow-900/20 text-yellow-400 border-yellow-400/20',
+  dropped: 'bg-red-900/20 text-red-400 border-red-400/20',
+};
+---
+
+<div class="group relative">
+  <!-- Glow effect -->
+  <div class="absolute -inset-0.5 bg-accent opacity-0 group-hover:opacity-20 rounded-lg blur transition-opacity"></div>
+  
+  <div class="bg-semi-transparent rounded-lg overflow-hidden hover:ring-1 hover:ring-accent transition-all relative">
+    <div class="grid grid-cols-[200px,1fr] gap-6 p-6">
+      <div class="relative">
+        <img 
+          src={cover} 
+          alt={title.english} 
+          class="w-[200px] aspect-[7/10] object-cover rounded border-2 border-accent/20 group-hover:border-accent/40 transition-all group-hover:animate-float"
+        />
+        {rating && (
+          <div class="absolute top-2 right-2 bg-accent/90 text-main px-2 py-1 rounded font-mono text-sm backdrop-blur-sm">
+            {rating}/10
+          </div>
+        )}
+      </div>
+      <div class="flex flex-col gap-2">
+        <div class="flex items-start justify-between">
+          <div>
+            <h3 class="text-xl font-medium tracking-tight group-hover:text-accent transition-colors">{title.english}</h3>
+            <p class="text-sm opacity-80 font-mono mt-1">{title.japanese}</p>
+            <p class="text-xs opacity-60 font-mono mt-0.5">{title.romaji}</p>
+          </div>
+          <span class={`px-3 py-1 rounded text-sm font-mono border ${statusColors[status]}`}>
+            {status.replace('_', ' ')}
+          </span>
+        </div>
+        
+        <div class="mt-4">
+          <div class="flex items-center justify-between text-sm mb-2">
+            <span class="font-mono text-main/60">Progress</span>
+            <span class="font-mono">{progress} <span class="text-main/40">/</span> {totalEpisodes}</span>
+          </div>
+          <div class="h-1.5 bg-semi-transparent rounded-full overflow-hidden">
+            <div 
+              class="h-full bg-accent transition-all group-hover:bg-accent/80 relative"
+              style={`width: ${(progress / totalEpisodes) * 100}%`}
+            >
+              <div class="absolute inset-0 bg-gradient-to-r from-transparent via-accent-light/20 to-transparent animate-pulse-slow"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-auto pt-4 flex items-center gap-4 text-sm">
+          <button class="relative group/btn font-mono text-accent hover:text-accent/80 transition-colors">
+            <span class="relative z-10">Update Progress</span>
+            <div class="absolute -inset-2 bg-accent opacity-0 group-hover/btn:opacity-10 rounded transition-opacity"></div>
+          </button>
+          <button class="relative group/btn font-mono text-main/60 hover:text-main/80 transition-colors">
+            <span class="relative z-10">Edit Notes</span>
+            <div class="absolute -inset-2 bg-main opacity-0 group-hover/btn:opacity-10 rounded transition-opacity"></div>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,24 @@
+---
+---
+
+<div class="fixed top-16 left-0 w-full h-1 bg-accent/10">
+  <div id="reading-progress" class="h-full bg-accent origin-left scale-x-0 transition-transform duration-100"></div>
+</div>
+
+<script>
+  const progress = document.getElementById('reading-progress');
+  const article = document.querySelector('article');
+
+  if (progress && article) {
+    window.addEventListener('scroll', () => {
+      const rect = article.getBoundingClientRect();
+      const articleStart = rect.top + window.scrollY;
+      const articleEnd = articleStart + rect.height - window.innerHeight;
+      const current = window.scrollY - articleStart;
+      const total = articleEnd - articleStart;
+      const percentage = Math.min(Math.max(current / total, 0), 1);
+      
+      progress.style.transform = `scaleX(${percentage})`;
+    });
+  }
+</script>

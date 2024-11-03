@@ -1,0 +1,132 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import AnimeCard from '../../components/AnimeCard.astro';
+import Stats from '../../components/Stats.astro';
+import TagFilter from '../../components/TagFilter.astro';
+
+const stats = {
+  watching: 25,
+  completed: 206,
+  planned: 236,
+  onHold: 42,
+  dropped: 11,
+  totalEpisodes: 4892
+};
+
+const library = [
+  {
+    title: {
+      romaji: "Steins;Gate",
+      english: "Steins;Gate",
+      japanese: "シュタインズ・ゲート"
+    },
+    cover: "https://cdn.myanimelist.net/images/anime/5/73199.jpg",
+    status: "watching",
+    progress: 12,
+    totalEpisodes: 24,
+    rating: 10,
+    tags: ["sci-fi", "thriller", "time-travel"]
+  },
+  {
+    title: {
+      romaji: "Ookami to Koushinryou",
+      english: "Spice and Wolf",
+      japanese: "狼と香辛料"
+    },
+    cover: "https://cdn.myanimelist.net/images/anime/1787/134760.jpg",
+    status: "completed",
+    progress: 13,
+    totalEpisodes: 13,
+    rating: 10,
+    tags: ["romance", "fantasy", "economics"]
+  }
+];
+
+const allTags = [...new Set(library.flatMap(anime => anime.tags))];
+const statusFilters = ["watching", "completed", "planned", "on_hold", "dropped"];
+---
+
+<Layout title="Library">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <header class="mb-12">
+      <h1 class="text-3xl font-medium mb-4">Anime Library</h1>
+      <p class="text-main/60 font-mono mb-8">Personal anime collection and tracking</p>
+      
+      <div class="mb-8">
+        <Stats stats={stats} />
+      </div>
+
+      <div class="space-y-6">
+        <div>
+          <h2 class="text-lg font-mono text-accent mb-4">Filter by Status</h2>
+          <div class="flex flex-wrap gap-2">
+            {statusFilters.map(status => (
+              <button
+                class="px-3 py-1.5 rounded-full font-mono text-sm bg-accent/10 text-accent hover:bg-accent/20 transition-colors"
+                data-status={status}
+              >
+                {status.replace('_', ' ')}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <h2 class="text-lg font-mono text-accent mb-4">Filter by Tags</h2>
+          <TagFilter tags={allTags} activeTags={[]} />
+        </div>
+      </div>
+    </header>
+
+    <div class="grid gap-6" data-library>
+      {library.map(anime => (
+        <div data-status={anime.status} data-tags={anime.tags.join(',')}>
+          <AnimeCard {...anime} />
+        </div>
+      ))}
+    </div>
+  </div>
+</Layout>
+
+<script>
+  const statusButtons = document.querySelectorAll('[data-status]');
+  const animeCards = document.querySelectorAll('[data-library] > div');
+  let activeStatus: string | null = null;
+
+  statusButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      const status = button.getAttribute('data-status')!;
+      
+      statusButtons.forEach(btn => {
+        btn.classList.remove('bg-accent', 'text-main');
+        btn.classList.add('bg-accent/10', 'text-accent');
+      });
+
+      if (activeStatus === status) {
+        activeStatus = null;
+      } else {
+        activeStatus = status;
+        button.classList.add('bg-accent', 'text-main');
+        button.classList.remove('bg-accent/10', 'text-accent');
+      }
+
+      filterLibrary();
+    });
+  });
+
+  function filterLibrary() {
+    animeCards.forEach(card => {
+      const status = card.getAttribute('data-status');
+      const tags = card.getAttribute('data-tags')?.split(',') || [];
+      
+      const statusMatch = !activeStatus || status === activeStatus;
+      const tagsMatch = true; // Implement tag filtering logic here
+
+      if (statusMatch && tagsMatch) {
+        card.classList.remove('hidden');
+      } else {
+        card.classList.add('hidden');
+      }
+    });
+  }
+</script>

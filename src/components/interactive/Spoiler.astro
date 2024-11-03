@@ -1,0 +1,28 @@
+---
+interface Props {
+  summary: string;
+}
+
+const { summary } = Astro.props;
+---
+
+<details class="group bg-semi-transparent rounded-lg overflow-hidden">
+  <summary class="p-4 cursor-pointer hover:bg-accent/5 transition-colors">
+    <div class="flex items-center gap-2">
+      <svg 
+        xmlns="http://www.w3.org/2000/svg" 
+        class="w-4 h-4 transition-transform group-open:rotate-90"
+        viewBox="0 0 24 24" 
+        fill="none" 
+        stroke="currentColor" 
+        stroke-width="2"
+      >
+        <path d="M9 18l6-6-6-6" />
+      </svg>
+      <span class="font-medium">{summary}</span>
+    </div>
+  </summary>
+  <div class="p-4 pt-0">
+    <slot />
+  </div>
+</details>

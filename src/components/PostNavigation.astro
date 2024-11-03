@@ -1,0 +1,47 @@
+---
+interface Props {
+  prev?: {
+    title: string;
+    slug: string;
+  } | null;
+  next?: {
+    title: string;
+    slug: string;
+  } | null;
+  type?: 'blog' | 'review';
+}
+
+const { prev, next, type = 'blog' } = Astro.props;
+
+const basePath = type === 'review' ? '/reviews' : '/blog';
+---
+
+<nav class="mt-16 pt-8 border-t border-accent/10">
+  <div class="flex justify-between gap-4 font-mono">
+    {prev && (
+      <a 
+        href={`${basePath}/${prev.slug}`}
+        class="group flex items-center gap-2 hover:text-accent transition-colors"
+      >
+        <span class="text-lg transition-transform group-hover:-translate-x-1">&larr;</span>
+        <div class="text-right">
+          <div class="text-xs text-main/60 mb-1">Previous {type}</div>
+          <div class="text-sm">{prev.title}</div>
+        </div>
+      </a>
+    )}
+    
+    {next && (
+      <a 
+        href={`${basePath}/${next.slug}`}
+        class="group flex items-center gap-2 hover:text-accent transition-colors ml-auto"
+      >
+        <div>
+          <div class="text-xs text-main/60 mb-1">Next {type}</div>
+          <div class="text-sm">{next.title}</div>
+        </div>
+        <span class="text-lg transition-transform group-hover:translate-x-1">&rarr;</span>
+      </a>
+    )}
+  </div>
+</nav>

@@ -1,0 +1,60 @@
+---
+interface Props {
+  tags: string[];
+  activeTags: string[];
+}
+
+const { tags, activeTags } = Astro.props;
+---
+
+<div class="flex flex-wrap gap-2 mb-8">
+  {tags.map(tag => (
+    <button
+      class:list={[
+        'px-3 py-1.5 rounded-full font-mono text-sm transition-colors',
+        activeTags.includes(tag)
+          ? 'bg-accent text-main hover:bg-accent/90'
+          : 'bg-accent/10 text-accent hover:bg-accent/20'
+      ]}
+      data-tag={tag}
+    >
+      #{tag}
+    </button>
+  ))}
+</div>
+
+<script>
+  const buttons = document.querySelectorAll('[data-tag]');
+  const articles = document.querySelectorAll('[data-tags]');
+  let activeTags: string[] = [];
+
+  buttons.forEach(button => {
+    button.addEventListener('click', () => {
+      const tag = button.getAttribute('data-tag')!;
+      
+      if (activeTags.includes(tag)) {
+        activeTags = activeTags.filter(t => t !== tag);
+        button.classList.remove('bg-accent', 'text-main');
+        button.classList.add('bg-accent/10', 'text-accent');
+      } else {
+        activeTags.push(tag);
+        button.classList.add('bg-accent', 'text-main');
+        button.classList.remove('bg-accent/10', 'text-accent');
+      }
+
+      filterArticles();
+    });
+  });
+
+  function filterArticles() {
+    articles.forEach(article => {
+      const tags = article.getAttribute('data-tags')?.split(',') || [];
+      
+      if (activeTags.length === 0 || activeTags.some(tag => tags.includes(tag))) {
+        article.classList.remove('hidden');
+      } else {
+        article.classList.add('hidden');
+      }
+    });
+  }
+</script>

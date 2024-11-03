@@ -1,0 +1,80 @@
+---
+interface Props {
+  value: number;
+  max?: number;
+  showValue?: boolean;
+  size?: 'sm' | 'md' | 'lg';
+  interactive?: boolean;
+}
+
+const { 
+  value, 
+  max = 10, 
+  showValue = true, 
+  size = 'md',
+  interactive = false 
+} = Astro.props;
+
+const sizes = {
+  sm: 'w-4 h-4',
+  md: 'w-5 h-5',
+  lg: 'w-6 h-6'
+};
+
+const percentage = (value / max) * 100;
+---
+
+<div class="inline-flex items-center gap-2">
+  <div class="relative">
+    <div class="flex gap-0.5">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <svg 
+          class={`${sizes[size]} text-accent/20`}
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          data-index={i}
+        >
+          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+        </svg>
+      ))}
+    </div>
+    <div 
+      class="absolute top-0 left-0 flex gap-0.5 overflow-hidden"
+      style={`width: ${percentage}%`}
+    >
+      {Array.from({ length: 5 }).map((_, i) => (
+        <svg 
+          class={`${sizes[size]} text-accent`}
+          viewBox="0 0 24 24"
+          fill="currentColor"
+        >
+          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+        </svg>
+      ))}
+    </div>
+  </div>
+  {showValue && (
+    <span class="font-mono text-sm text-accent">
+      {value}/{max}
+    </span>
+  )}
+</div>
+
+{interactive && (
+  <script>
+    const container = document.querySelector('.rating-container');
+    const stars = container?.querySelectorAll('svg[data-index]');
+    
+    if (container && stars) {
+      stars.forEach(star => {
+        star.addEventListener('click', () => {
+          const index = parseInt(star.getAttribute('data-index') || '0');
+          const newRating = ((index + 1) / 5) * 10;
+          container.dispatchEvent(new CustomEvent('rating-change', { 
+            detail: { value: newRating } 
+          }));
+        });
+      });
+    }
+  </script>
+)}

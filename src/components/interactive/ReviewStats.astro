@@ -1,0 +1,38 @@
+---
+interface Props {
+  stats: {
+    story: number;
+    animation: number;
+    sound: number;
+    characters: number;
+    enjoyment: number;
+  };
+}
+
+const { stats } = Astro.props;
+
+const categories = [
+  { key: 'story', label: 'Story' },
+  { key: 'animation', label: 'Animation' },
+  { key: 'sound', label: 'Sound' },
+  { key: 'characters', label: 'Characters' },
+  { key: 'enjoyment', label: 'Enjoyment' }
+] as const;
+---
+
+<div class="grid gap-3">
+  {categories.map(cat => (
+    <div>
+      <div class="flex items-center justify-between text-sm mb-1">
+        <span class="text-main/60">{cat.label}</span>
+        <span class="font-mono text-accent">{stats[cat.key]}/10</span>
+      </div>
+      <div class="h-2 bg-semi-transparent rounded-full overflow-hidden">
+        <div 
+          class="h-full bg-accent"
+          style={`width: ${(stats[cat.key] / 10) * 100}%`}
+        ></div>
+      </div>
+    </div>
+  ))}
+</div>

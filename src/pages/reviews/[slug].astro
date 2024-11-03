@@ -1,0 +1,177 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Rating from '../../components/interactive/Rating.astro';
+import ReviewStats from '../../components/interactive/ReviewStats.astro';
+import QuoteCard from '../../components/interactive/QuoteCard.astro';
+import CharacterCard from '../../components/interactive/CharacterCard.astro';
+import PostNavigation from '../../components/PostNavigation.astro';
+
+export function getStaticPaths() {
+  return [
+    {
+      params: { 
+        slug: 'ancient-magus-bride' 
+      },
+      props: {
+        review: {
+          title: {
+            english: "The Ancient Magus' Bride",
+            japanese: "魔法使いの嫁",
+            romaji: "Mahoutsukai no Yome"
+          },
+          cover: "https://cdn.myanimelist.net/images/anime/1140/124500.jpg",
+          rating: 10,
+          reviewDate: "2024-01-12",
+          content: `
+The Ancient Magus' Bride represents a masterful fusion of British folklore and contemporary magical storytelling. Set against the backdrop of rural England, the series weaves together elements of traditional fairy tales with modern narrative sensibilities, creating something both timeless and fresh.
+
+## Visual Excellence
+
+The animation quality consistently impresses, particularly in its representation of magical elements. The way magic manifests - through intricate glowing sigils and flowing natural phenomena - creates a sense of wonder while maintaining internal consistency. The attention to detail in both character animation and background art brings the mystical England setting to vivid life.
+
+## Thematic Depth
+
+At its core, the series explores themes of belonging, growth, and the nature of humanity. Through Chise's journey from a lost soul to a confident apprentice, we see a nuanced examination of healing from trauma and finding one's place in the world. The relationship between Chise and Elias, while unconventional, serves as a fascinating lens through which to explore these themes.`,
+          stats: {
+            story: 10,
+            animation: 9,
+            sound: 10,
+            characters: 10,
+            enjoyment: 10
+          },
+          pros: [
+            "Exceptional world-building",
+            "Beautiful animation",
+            "Deep thematic exploration",
+            "Strong character development"
+          ],
+          cons: [
+            "Pacing can be slow at times",
+            "Some folklore references may be obscure"
+          ],
+          characters: [
+            {
+              name: "Chise Hatori",
+              role: "Protagonist",
+              image: "https://cdn.myanimelist.net/images/characters/14/349591.jpg",
+              description: "A young mage in training with a unique connection to magic.",
+              traits: ["determined", "kind", "resilient"]
+            },
+            {
+              name: "Elias Ainsworth",
+              role: "Deuteragonist",
+              image: "https://cdn.myanimelist.net/images/characters/8/349590.jpg",
+              description: "A powerful and mysterious mage who takes Chise as his apprentice.",
+              traits: ["mysterious", "protective", "learning humanity"]
+            }
+          ],
+          quotes: [
+            {
+              text: "You can't save everyone. But that doesn't mean you stop trying.",
+              character: "Chise Hatori",
+              episode: 8,
+              context: "Speaking about her growing understanding of magic and its limits"
+            }
+          ],
+          tags: ["fantasy", "romance", "magic"]
+        }
+      }
+    }
+  ];
+}
+
+const { review } = Astro.props;
+---
+
+<Layout title={review.title.english}>
+  <article class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <header class="mb-12">
+      <div class="grid sm:grid-cols-[300px,1fr] gap-8">
+        <img 
+          src={review.cover} 
+          alt={review.title.english}
+          class="w-full aspect-[7/10] object-cover rounded-lg shadow-xl"
+        />
+        <div>
+          <h1 class="text-3xl font-medium mb-2">{review.title.english}</h1>
+          <p class="font-mono text-lg mb-4">{review.title.japanese}</p>
+          <p class="font-mono text-accent/80 mb-6">{review.title.romaji}</p>
+          
+          <div class="mb-8">
+            <div class="text-xl mb-2">Overall Rating</div>
+            <Rating value={review.rating} size="lg" />
+          </div>
+
+          <div class="mb-8">
+            <div class="text-xl mb-4">Detailed Ratings</div>
+            <ReviewStats stats={review.stats} />
+          </div>
+
+          <div class="flex flex-wrap gap-2">
+            {review.tags.map(tag => (
+              <a 
+                href={`/tags/${tag}`}
+                class="bg-accent/10 px-3 py-1.5 rounded-full text-accent/80 text-sm font-mono hover:bg-accent/20 transition-colors"
+              >
+                #{tag}
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="mb-12 grid sm:grid-cols-2 gap-6">
+      <div class="bg-semi-transparent rounded-lg p-4">
+        <h3 class="text-accent mb-2 font-medium">Pros</h3>
+        <ul class="space-y-2">
+          {review.pros.map(pro => (
+            <li class="flex items-start gap-2">
+              <svg class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              </svg>
+              <span class="text-main/80">{pro}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div class="bg-semi-transparent rounded-lg p-4">
+        <h3 class="text-accent mb-2 font-medium">Cons</h3>
+        <ul class="space-y-2">
+          {review.cons.map(con => (
+            <li class="flex items-start gap-2">
+              <svg class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+              </svg>
+              <span class="text-main/80">{con}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+
+    <div class="prose prose-invert prose-accent max-w-none mb-12">
+      {review.content}
+    </div>
+
+    <section class="mb-12">
+      <h2 class="text-2xl font-medium mb-6">Key Characters</h2>
+      <div class="grid sm:grid-cols-2 gap-6">
+        {review.characters.map(character => (
+          <CharacterCard {...character} />
+        ))}
+      </div>
+    </section>
+
+    <section class="mb-12">
+      <h2 class="text-2xl font-medium mb-6">Memorable Quotes</h2>
+      <div class="space-y-6">
+        {review.quotes.map(quote => (
+          <QuoteCard {...quote} />
+        ))}
+      </div>
+    </section>
+
+    <PostNavigation type="review" />
+  </article>
+</Layout>

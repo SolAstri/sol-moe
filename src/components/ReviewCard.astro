@@ -1,0 +1,91 @@
+---
+import Rating from './interactive/Rating.astro';
+
+interface Props {
+  anime: {
+    title: {
+      english: string;
+      japanese: string;
+    };
+    cover: string;
+    rating: number;
+    reviewDate: string;
+    excerpt: string;
+    slug: string;
+    tags?: string[];
+    stats?: {
+      story: number;
+      animation: number;
+      sound: number;
+      characters: number;
+      enjoyment: number;
+    };
+  };
+  detailed?: boolean;
+}
+
+const { anime, detailed = false } = Astro.props;
+---
+
+<article class="group">
+  <a href={`/reviews/${anime.slug}`} class="grid grid-cols-[120px,1fr] sm:grid-cols-[180px,1fr] gap-4 bg-semi-transparent p-4 rounded-lg hover:ring-1 hover:ring-accent transition-all">
+    <div class="relative">
+      <img 
+        src={anime.cover} 
+        alt={anime.title.english} 
+        class="w-full aspect-[7/10] object-cover rounded border border-accent/20 group-hover:border-accent/40 transition-colors"
+      />
+      <div class="absolute top-2 right-2 bg-accent/90 text-main px-2 py-1 rounded text-xs font-mono backdrop-blur-sm">
+        {anime.rating}/10
+      </div>
+    </div>
+    <div>
+      <div class="mb-2">
+        <h3 class="font-medium tracking-tight group-hover:text-accent transition-colors">
+          {anime.title.english}
+        </h3>
+        <p class="text-sm font-mono opacity-80 mt-0.5">{anime.title.japanese}</p>
+      </div>
+      
+      {detailed && anime.stats && (
+        <div class="grid grid-cols-2 gap-x-8 gap-y-2 mb-4 text-sm">
+          <div>
+            <div class="text-main/60 mb-1">Story</div>
+            <Rating value={anime.stats.story} size="sm" />
+          </div>
+          <div>
+            <div class="text-main/60 mb-1">Animation</div>
+            <Rating value={anime.stats.animation} size="sm" />
+          </div>
+          <div>
+            <div class="text-main/60 mb-1">Sound</div>
+            <Rating value={anime.stats.sound} size="sm" />
+          </div>
+          <div>
+            <div class="text-main/60 mb-1">Characters</div>
+            <Rating value={anime.stats.characters} size="sm" />
+          </div>
+        </div>
+      )}
+      
+      <p class="text-sm text-main/70 line-clamp-2 leading-relaxed">{anime.excerpt}</p>
+      
+      {anime.tags && (
+        <div class="mt-3 flex flex-wrap gap-2">
+          {anime.tags.map(tag => (
+            <a 
+              href={`/tags/${tag}`}
+              class="text-xs font-mono bg-accent/10 px-2 py-0.5 rounded-full text-accent/80 hover:bg-accent/20 transition-colors"
+            >
+              #{tag}
+            </a>
+          ))}
+        </div>
+      )}
+      
+      <div class="mt-2 text-xs font-mono text-main/50">
+        Reviewed on {anime.reviewDate}
+      </div>
+    </div>
+  </a>
+</article>

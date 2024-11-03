@@ -1,0 +1,244 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import PostNavigation from '../../components/PostNavigation.astro';
+import TableOfContents from '../../components/TableOfContents.astro';
+import ShareButtons from '../../components/ShareButtons.astro';
+import ReadingProgress from '../../components/ReadingProgress.astro';
+import RelatedPosts from '../../components/RelatedPosts.astro';
+import ReviewStats from '../../components/interactive/ReviewStats.astro';
+import CharacterCard from '../../components/interactive/CharacterCard.astro';
+import QuoteCard from '../../components/interactive/QuoteCard.astro';
+import { posts } from '../../data/posts';
+import { marked } from 'marked';
+
+export function getStaticPaths() {
+  return posts.map((post, index) => ({
+    params: { slug: post.slug },
+    props: {
+      post,
+      prev: index > 0 ? posts[index - 1] : null,
+      next: index < posts.length - 1 ? posts[index + 1] : null,
+      allPosts: posts
+    }
+  }));
+}
+
+const { post, prev, next, allPosts } = Astro.props;
+
+// Parse markdown and extract headings for TOC
+const tokens = marked.lexer(post.content);
+const toc = tokens
+  .filter(token => token.type === 'heading' && token.depth > 1)
+  .map(token => ({
+    text: token.text,
+    id: token.text.toLowerCase().replace(/[^\w]+/g, '-'),
+    depth: token.depth
+  }));
+
+// Parse markdown to HTML
+const content = marked(post.content, {
+  gfm: true,
+  breaks: true,
+  headerIds: true
+});
+
+// Calculate reading time if not provided
+const wordsPerMinute = 200;
+const words = post.content.trim().split(/\s+/).length;
+const readingTime = post.readingTime || `${Math.ceil(words / wordsPerMinute)} min read`;
+---
+
+<Layout title={post.title}>
+  <ReadingProgress />
+  
+  <div class="relative">
+    <div class="absolute inset-0 bg-gradient-to-b from-transparent to-main-bg"></div>
+    <img 
+      src={post.heroImage} 
+      alt={post.title}
+      class="w-full h-[40vh] object-cover opacity-30"
+    />
+  </div>
+
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-32 relative z-10">
+    <div class="grid lg:grid-cols-[1fr,16rem] gap-12">
+      <article class="relative">
+        <header class="mb-12">
+          <div class="flex flex-wrap items-center gap-3 font-mono text-sm mb-4">
+            <time class="text-accent/80">{post.date}</time>
+            <span class="text-accent/40">•</span>
+            <span class="text-main/60">{readingTime}</span>
+            {post.anime?.rating && (
+              <>
+                <span class="text-accent/40">•</span>
+                <span class="text-accent">{post.anime.rating}/10</span>
+              </>
+            )}
+          </div>
+
+          <h1 class="text-4xl font-medium mb-6 leading-tight">{post.title}</h1>
+          
+          <p class="text-xl text-main/70 mb-6 font-light leading-relaxed">
+            {post.excerpt}
+          </p>
+
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div class="flex flex-wrap gap-2">
+              {post.tags.map(tag => (
+                <a 
+                  href={`/tags/${tag}`}
+                  class="bg-accent/10 px-3 py-1.5 rounded-full text-accent/80 text-sm font-mono hover:bg-accent/20 transition-colors"
+                >
+                  #{tag}
+                </a>
+              ))}
+            </div>
+            
+            <ShareButtons 
+              title={post.title} 
+              url={new URL(Astro.url.pathname, Astro.site).toString()} 
+            />
+          </div>
+        </header>
+
+        {post.type === 'review' && post.stats && (
+          <div class="mb-12">
+            <h2 class="text-2xl font-medium mb-6">Ratings</h2>
+            <ReviewStats stats={post.stats} />
+          </div>
+        )}
+
+        {post.type === 'review' && post.pros && post.cons && (
+          <div class="mb-12 grid sm:grid-cols-2 gap-6">
+            <div class="bg-semi-transparent rounded-lg p-4">
+              <h3 class="text-accent mb-2 font-medium">Pros</h3>
+              <ul class="space-y-2">
+                {post.pros.map(pro => (
+                  <li class="flex items-start gap-2">
+                    <svg class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                    <span class="text-main/80">{pro}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div class="bg-semi-transparent rounded-lg p-4">
+              <h3 class="text-accent mb-2 font-medium">Cons</h3>
+              <ul class="space-y-2">
+                {post.cons.map(con => (
+                  <li class="flex items-start gap-2">
+                    <svg class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                    </svg>
+                    <span class="text-main/80">{con}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+
+        <div class="prose prose-invert prose-accent max-w-none mb-12" set:html={content} />
+
+        {post.type === 'review' && post.characters && (
+          <section class="mb-12">
+            <h2 class="text-2xl font-medium mb-6">Key Characters</h2>
+            <div class="grid sm:grid-cols-2 gap-6">
+              {post.characters.map(character => (
+                <CharacterCard {...character} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {post.type === 'review' && post.quotes && (
+          <section class="mb-12">
+            <h2 class="text-2xl font-medium mb-6">Memorable Quotes</h2>
+            <div class="space-y-6">
+              {post.quotes.map(quote => (
+                <QuoteCard {...quote} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        <PostNavigation prev={prev} next={next} type={post.type} />
+        
+        <RelatedPosts 
+          currentSlug={post.slug}
+          currentTags={post.tags}
+          allPosts={allPosts}
+        />
+      </article>
+
+      <aside class="hidden lg:block">
+        <div class="sticky top-24 space-y-8">
+          <TableOfContents toc={toc} />
+          
+          <div class="bg-semi-transparent rounded-lg p-4">
+            <h2 class="text-sm font-mono text-accent mb-3">About this post</h2>
+            <dl class="space-y-2 text-sm">
+              <div>
+                <dt class="text-main/60">Published on</dt>
+                <dd class="font-mono">{post.date}</dd>
+              </div>
+              <div>
+                <dt class="text-main/60">Reading time</dt>
+                <dd class="font-mono">{readingTime}</dd>
+              </div>
+              <div>
+                <dt class="text-main/60">Word count</dt>
+                <dd class="font-mono">{words} words</dd>
+              </div>
+              {post.type === 'review' && post.anime && (
+                <div>
+                  <dt class="text-main/60">Rating</dt>
+                  <dd class="font-mono">{post.anime.rating}/10</dd>
+                </div>
+              )}
+            </dl>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  /* Custom styles for markdown content */
+  :global(.prose h2) {
+    font-size: 1.75rem;
+    margin-top: 2.5rem;
+    scroll-margin-top: 6rem;
+  }
+
+  :global(.prose h3) {
+    font-size: 1.3rem;
+    margin-top: 2rem;
+    scroll-margin-top: 6rem;
+  }
+
+  :global(.prose a:not(.anchor)) {
+    text-decoration: none;
+    background-image: linear-gradient(rgb(253 200 235), rgb(253 200 235));
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    background-size: 100% 1px;
+    transition: all 0.2s;
+  }
+
+  :global(.prose a:hover) {
+    color: rgb(214 143 159);
+    background-image: linear-gradient(rgb(214 143 159), rgb(214 143 159));
+  }
+
+  :global(.prose pre) {
+    background: rgba(22, 13, 37, 0.87);
+    border: 1px solid rgb(214 143 159 / 0.1);
+  }
+
+  :global(.prose ul li::marker) {
+    color: rgb(214 143 159);
+  }
+</style>

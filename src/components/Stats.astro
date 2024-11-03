@@ -1,0 +1,41 @@
+---
+interface Props {
+  stats: {
+    watching: number;
+    completed: number;
+    planned: number;
+    onHold: number;
+    dropped: number;
+    totalEpisodes: number;
+  };
+}
+
+const { stats } = Astro.props;
+---
+
+<div class="grid grid-cols-3 md:grid-cols-6 gap-4 p-4 bg-semi-transparent rounded-lg font-mono text-sm">
+  <div class="flex flex-col items-center">
+    <span class="text-blue-400">{stats.watching}</span>
+    <span class="opacity-60">Watching</span>
+  </div>
+  <div class="flex flex-col items-center">
+    <span class="text-green-400">{stats.completed}</span>
+    <span class="opacity-60">Completed</span>
+  </div>
+  <div class="flex flex-col items-center">
+    <span class="text-gray-400">{stats.planned}</span>
+    <span class="opacity-60">Planned</span>
+  </div>
+  <div class="flex flex-col items-center">
+    <span class="text-yellow-400">{stats.onHold}</span>
+    <span class="opacity-60">On Hold</span>
+  </div>
+  <div class="flex flex-col items-center">
+    <span class="text-red-400">{stats.dropped}</span>
+    <span class="opacity-60">Dropped</span>
+  </div>
+  <div class="flex flex-col items-center">
+    <span class="text-accent">{stats.totalEpisodes}</span>
+    <span class="opacity-60">Episodes</span>
+  </div>
+</div>

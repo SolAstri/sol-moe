@@ -1,0 +1,48 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import BlogPost from '../../components/BlogPost.astro';
+
+export function getStaticPaths() {
+  const posts = [
+    {
+      title: "The Evolution of Time Travel in Anime",
+      date: "2024-01-15",
+      excerpt: "Exploring how anime's approach to time travel narratives has evolved.",
+      slug: "time-travel-in-anime",
+      tags: ["analysis", "sci-fi", "steins-gate"]
+    },
+    {
+      title: "Visual Storytelling in Spice and Wolf",
+      date: "2024-01-10",
+      excerpt: "Breaking down how Spice and Wolf uses subtle visual cues.",
+      slug: "visual-storytelling-spice-wolf",
+      tags: ["analysis", "romance", "economics"]
+    }
+  ];
+
+  const tags = [...new Set(posts.flatMap(post => post.tags))];
+
+  return tags.map(tag => ({
+    params: { tag },
+    props: {
+      tag,
+      posts: posts.filter(post => post.tags.includes(tag))
+    }
+  }));
+}
+
+const { tag, posts } = Astro.props;
+---
+
+<Layout title={`#${tag} posts`}>
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <header class="mb-12">
+      <h1 class="text-3xl font-medium mb-4">Posts tagged with <span class="text-accent">#{tag}</span></h1>
+      <p class="text-main/60 font-mono">{posts.length} post{posts.length === 1 ? '' : 's'}</p>
+    </header>
+
+    <div class="space-y-12">
+      {posts.map(post => <BlogPost {...post} />)}
+    </div>
+  </div>
+</Layout>

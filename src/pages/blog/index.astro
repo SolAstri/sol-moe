@@ -4,10 +4,32 @@ import BlogPost from '../../components/BlogPost.astro';
 import TagFilter from '../../components/TagFilter.astro';
 import { posts } from '../../data/posts';
 
+// Pagination configuration
+const POSTS_PER_PAGE = 12;
+const currentPage = Number(Astro.url.searchParams.get('page') || '1');
+const currentType = Astro.url.searchParams.get('type');
 const allTags = [...new Set(posts.flatMap(post => post.tags))];
 
+// Filter posts if type is specified
+let filteredPosts = posts;
+if (currentType) {
+  filteredPosts = posts.filter(post => post.type === currentType);
+}
+
+// Calculate pagination values
+const totalPosts = filteredPosts.length;
+const totalPages = Math.ceil(totalPosts / POSTS_PER_PAGE);
+const startIndex = (currentPage - 1) * POSTS_PER_PAGE;
+const endIndex = startIndex + POSTS_PER_PAGE;
+
+// Get posts for current page
+const paginatedPosts = filteredPosts
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(startIndex, endIndex);
+
+// Calculate stats
 const stats = {
-  totalPosts: posts.length,
+  totalPosts,
   byType: {
     review: posts.filter(p => p.type === 'review').length,
     analysis: posts.filter(p => p.type === 'analysis').length
@@ -17,62 +39,143 @@ const stats = {
     return acc;
   }, {} as Record<string, number>)
 };
+
+// Helper function to generate page URL
+function getPageUrl(pageNum: number, type?: string) {
+  const url = new URL(Astro.url);
+  url.searchParams.set('page', pageNum.toString());
+  if (type) url.searchParams.set('type', type);
+  return url.pathname + url.search;
+}
 ---
 
 <Layout title="Blog">
   <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-    <header class="mb-6">
-      <h1 class="text-3xl font-medium mb-2">Blog</h1>
-      <p class="text-main/60 font-mono mb-4">Reviews, analysis, and thoughts on anime</p>
-      
-      <div class="grid sm:grid-cols-2 gap-4 mb-4">
-        <div class="bg-semi-transparent rounded-lg p-4">
-          <h2 class="text-sm font-mono text-accent mb-2">Post Stats</h2>
-          <dl class="space-y-1 text-sm">
-            <div class="flex justify-between">
-              <dt class="text-main/60">Total Posts</dt>
-              <dd class="font-mono">{stats.totalPosts}</dd>
-            </div>
-            <div class="flex justify-between">
-              <dt class="text-main/60">Reviews</dt>
-              <dd class="font-mono">{stats.byType.review}</dd>
-            </div>
-            <div class="flex justify-between">
-              <dt class="text-main/60">Analysis</dt>
-              <dd class="font-mono">{stats.byType.analysis}</dd>
-            </div>
-          </dl>
-        </div>
-        
-        <div class="bg-semi-transparent rounded-lg p-4">
-          <h2 class="text-sm font-mono text-accent mb-2">Popular Tags</h2>
-          <div class="space-y-1 text-sm">
-            {Object.entries(stats.byTag)
-              .sort(([,a], [,b]) => b - a)
-              .slice(0, 5)
-              .map(([tag, count]) => (
-                <div class="flex justify-between">
-                  <span class="text-main/60">#{tag}</span>
-                  <span class="font-mono">{count}</span>
-                </div>
-              ))
-            }
+    <div class="flex items-center justify-between mb-8">
+      <h1 class="text-3xl font-medium">Blog</h1>
+      <div class="flex gap-3">
+        <a
+            href="/blog"
+            class:list={[
+              'px-3 py-1.5 rounded-full font-mono text-sm transition-colors',
+              !currentType ? 'bg-accent text-main' : 'bg-accent/10 text-accent hover:bg-accent/20'
+            ]}
+        >
+          All
+        </a>
+        <a
+            href="/blog?type=review"
+            class:list={[
+              'px-3 py-1.5 rounded-full font-mono text-sm transition-colors',
+              currentType === 'review' ? 'bg-accent text-main' : 'bg-accent/10 text-accent hover:bg-accent/20'
+            ]}
+        >
+          Reviews ({stats.byType.review})
+        </a>
+        <a
+            href="/blog?type=analysis"
+            class:list={[
+              'px-3 py-1.5 rounded-full font-mono text-sm transition-colors',
+              currentType === 'analysis' ? 'bg-accent text-main' : 'bg-accent/10 text-accent hover:bg-accent/20'
+            ]}
+        >
+          Analysis ({stats.byType.analysis})
+        </a>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+      <div class="bg-semi-transparent rounded-lg p-4">
+        <h2 class="text-sm font-mono text-accent mb-2">Content Stats</h2>
+        <dl class="space-y-1 text-sm">
+          <div class="flex justify-between">
+            <dt class="text-main/60">Total Posts</dt>
+            <dd class="font-mono">{stats.totalPosts}</dd>
           </div>
+          <div class="flex justify-between">
+            <dt class="text-main/60">Reviews</dt>
+            <dd class="font-mono">{stats.byType.review}</dd>
+          </div>
+          <div class="flex justify-between">
+            <dt class="text-main/60">Analysis</dt>
+            <dd class="font-mono">{stats.byType.analysis}</dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="bg-semi-transparent rounded-lg p-4">
+        <h2 class="text-sm font-mono text-accent mb-2">Popular Tags</h2>
+        <div class="flex flex-wrap gap-2">
+          {Object.entries(stats.byTag)
+              .sort(([,a], [,b]) => b - a)
+              .slice(0, 6)
+              .map(([tag, count]) => (
+                  <a
+                      href={`/tags/${tag}`}
+                      class="text-xs font-mono bg-accent/10 px-2 py-0.5 rounded-full text-accent/80 hover:bg-accent/20 transition-colors"
+                  >
+                    #{tag} <span class="text-main/40">({count})</span>
+                  </a>
+              ))
+          }
         </div>
       </div>
-      
-      <TagFilter tags={allTags} activeTags={[]} />
-    </header>
-
-    <div class="space-y-3" data-posts>
-      {posts
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-        .map(post => (
-          <div data-tags={post.tags.join(',')}>
-            <BlogPost {...post} />
-          </div>
-        ))
-      }
     </div>
+
+    <TagFilter tags={allTags} activeTags={[]} />
+
+    <div class="space-y-4 mb-8">
+      {paginatedPosts.map(post => (
+          <BlogPost post={post} />
+      ))}
+    </div>
+
+    {totalPages > 1 && (
+        <nav class="flex items-center justify-between border-t border-accent/10 pt-6" aria-label="Pagination">
+          <div class="flex flex-1 justify-between sm:justify-start gap-4">
+            {currentPage > 1 && (
+                <a
+                    href={getPageUrl(currentPage - 1, currentType)}
+                    class="group relative inline-flex items-center text-sm font-mono"
+                >
+                  <svg class="mr-2 h-5 w-5 text-accent transition-transform group-hover:-translate-x-1" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M18 10a.75.75 0 01-.75.75H4.66l2.1 1.95a.75.75 0 11-1.02 1.1l-3.5-3.25a.75.75 0 010-1.1l3.5-3.25a.75.75 0 111.02 1.1l-2.1 1.95h12.59A.75.75 0 0118 10z" clip-rule="evenodd" />
+                  </svg>
+                  Previous
+                </a>
+            )}
+            {currentPage < totalPages && (
+                <a
+                    href={getPageUrl(currentPage + 1, currentType)}
+                    class="group relative inline-flex items-center text-sm font-mono ml-4"
+                >
+                  Next
+                  <svg class="ml-2 h-5 w-5 text-accent transition-transform group-hover:translate-x-1" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M2 10a.75.75 0 01.75-.75h12.59l-2.1-1.95a.75.75 0 111.02-1.1l3.5 3.25a.75.75 0 010 1.1l-3.5 3.25a.75.75 0 11-1.02-1.1l2.1-1.95H2.75A.75.75 0 012 10z" clip-rule="evenodd" />
+                  </svg>
+                </a>
+            )}
+          </div>
+
+          <div class="hidden sm:flex justify-center flex-1">
+            <div class="inline-flex -space-x-px font-mono text-sm">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(num => (
+                  <a
+                      href={getPageUrl(num, currentType)}
+                      class:list={[
+                        'relative inline-flex items-center px-4 py-2 transition-colors',
+                        num === currentPage
+                            ? 'bg-accent text-main z-10'
+                            : 'text-main/60 hover:bg-accent/10'
+                      ]}
+                      aria-current={num === currentPage ? 'page' : undefined}
+                  >
+                    {num}
+                  </a>
+              ))}
+            </div>
+          </div>
+        </nav>
+    )}
   </div>
 </Layout>

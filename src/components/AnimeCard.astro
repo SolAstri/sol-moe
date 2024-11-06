@@ -1,18 +1,13 @@
 ---
+// components/AnimeCard.astro
+import type { AnimeEntry } from '../data/anime';
+
 interface Props {
-  title: {
-    romaji: string;
-    english: string;
-    japanese: string;
-  };
-  cover: string;
-  status: 'watching' | 'completed' | 'planned' | 'on_hold' | 'dropped';
-  progress: number;
-  totalEpisodes: number;
-  rating?: number;
+  anime: AnimeEntry;
+  detailed?: boolean;
 }
 
-const { title, cover, status, progress, totalEpisodes, rating } = Astro.props;
+const { anime, detailed = false } = Astro.props;
 
 const statusColors = {
   watching: 'bg-blue-900/20 text-blue-400 border-blue-400/20',
@@ -20,65 +15,101 @@ const statusColors = {
   planned: 'bg-gray-800/20 text-gray-400 border-gray-400/20',
   on_hold: 'bg-yellow-900/20 text-yellow-400 border-yellow-400/20',
   dropped: 'bg-red-900/20 text-red-400 border-red-400/20',
-};
+} as const;
+
+const progressPercentage = (anime.progress / anime.totalEpisodes) * 100;
 ---
 
-<div class="group relative">
-  <!-- Glow effect -->
+<a
+    href={`/library/${anime.title.english.toLowerCase().replace(/ /g, '-')}`}
+    class="group relative"
+>
+  {/* Glow effect */}
   <div class="absolute -inset-0.5 bg-accent opacity-0 group-hover:opacity-20 rounded-lg blur transition-opacity"></div>
-  
+
   <div class="bg-semi-transparent rounded-lg overflow-hidden hover:ring-1 hover:ring-accent transition-all relative">
-    <div class="grid grid-cols-[200px,1fr] gap-6 p-6">
+    <div class="flex gap-3 p-3">
+      {/* Cover Image */}
       <div class="relative">
-        <img 
-          src={cover} 
-          alt={title.english} 
-          class="w-[200px] aspect-[7/10] object-cover rounded border-2 border-accent/20 group-hover:border-accent/40 transition-all group-hover:animate-float"
+        <img
+            src={anime.cover}
+            alt={anime.title.english}
+            class="w-14 h-20 object-cover rounded border border-accent/20 group-hover:border-accent/40 transition-all"
+            loading="lazy"
         />
-        {rating && (
-          <div class="absolute top-2 right-2 bg-accent/90 text-main px-2 py-1 rounded font-mono text-sm backdrop-blur-sm">
-            {rating}/10
-          </div>
+        {anime.rating && (
+            <div class="absolute -top-1.5 -right-1.5 bg-accent/90 text-main px-1.5 py-0.5 rounded text-xs font-mono backdrop-blur-sm">
+              {anime.rating}
+            </div>
         )}
       </div>
-      <div class="flex flex-col gap-2">
-        <div class="flex items-start justify-between">
-          <div>
-            <h3 class="text-xl font-medium tracking-tight group-hover:text-accent transition-colors">{title.english}</h3>
-            <p class="text-sm opacity-80 font-mono mt-1">{title.japanese}</p>
-            <p class="text-xs opacity-60 font-mono mt-0.5">{title.romaji}</p>
+
+      {/* Content */}
+      <div class="flex-1 min-w-0 flex flex-col justify-between">
+        <div>
+          {/* Title and Status */}
+          <div class="flex items-start justify-between gap-2 mb-1">
+            <div class="min-w-0">
+              <h3 class="font-medium text-sm leading-tight truncate group-hover:text-accent transition-colors">
+                {anime.title.english}
+              </h3>
+              <p class="text-xs text-main/60 font-mono truncate">
+                {anime.title.japanese}
+              </p>
+            </div>
+            <span class={`flex-shrink-0 px-2 py-0.5 rounded-full text-xs font-mono border ${statusColors[anime.status]}`}>
+              {anime.status.replace('_', ' ')}
+            </span>
           </div>
-          <span class={`px-3 py-1 rounded text-sm font-mono border ${statusColors[status]}`}>
-            {status.replace('_', ' ')}
-          </span>
+
+          {/* Tags */}
+          {detailed && anime.tags && (
+              <div class="flex flex-wrap gap-1 mt-1.5">
+                {anime.tags.slice(0, 3).map(tag => (
+                    <a
+                        href={`/library?tag=${tag}`}
+                        class="text-xs font-mono bg-accent/10 px-1.5 py-0.5 rounded-full text-accent/80 hover:bg-accent/20 transition-colors"
+                        onClick={e => e.stopPropagation()}
+                    >
+                      {tag}
+                    </a>
+                ))}
+                {anime.tags.length > 3 && (
+                    <span class="text-xs font-mono text-main/40">
+                  +{anime.tags.length - 3}
+                </span>
+                )}
+              </div>
+          )}
         </div>
-        
-        <div class="mt-4">
-          <div class="flex items-center justify-between text-sm mb-2">
+
+        {/* Progress Bar */}
+        <div class="mt-auto">
+          <div class="flex items-center justify-between text-xs mb-1">
             <span class="font-mono text-main/60">Progress</span>
-            <span class="font-mono">{progress} <span class="text-main/40">/</span> {totalEpisodes}</span>
+            <span class="font-mono">
+              <span class="text-accent">{anime.progress}</span>
+              <span class="text-main/40">/</span>
+              <span class="text-main/60">{anime.totalEpisodes}</span>
+            </span>
           </div>
-          <div class="h-1.5 bg-semi-transparent rounded-full overflow-hidden">
-            <div 
-              class="h-full bg-accent transition-all group-hover:bg-accent/80 relative"
-              style={`width: ${(progress / totalEpisodes) * 100}%`}
+          <div class="h-1 bg-accent/10 rounded-full overflow-hidden">
+            <div
+                class="h-full bg-accent transition-all relative group-hover:bg-accent/80"
+                style={`width: ${progressPercentage}%`}
             >
               <div class="absolute inset-0 bg-gradient-to-r from-transparent via-accent-light/20 to-transparent animate-pulse-slow"></div>
             </div>
           </div>
         </div>
-
-        <div class="mt-auto pt-4 flex items-center gap-4 text-sm">
-          <button class="relative group/btn font-mono text-accent hover:text-accent/80 transition-colors">
-            <span class="relative z-10">Update Progress</span>
-            <div class="absolute -inset-2 bg-accent opacity-0 group-hover/btn:opacity-10 rounded transition-opacity"></div>
-          </button>
-          <button class="relative group/btn font-mono text-main/60 hover:text-main/80 transition-colors">
-            <span class="relative z-10">Edit Notes</span>
-            <div class="absolute -inset-2 bg-main opacity-0 group-hover/btn:opacity-10 rounded transition-opacity"></div>
-          </button>
-        </div>
       </div>
     </div>
   </div>
-</div>
+</a>
+
+<style>
+  @keyframes pulse-slow {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 1; }
+  }
+</style>

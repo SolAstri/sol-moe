@@ -1,0 +1,275 @@
+---
+// pages/library/[slug].astro
+import Layout from '../../layouts/Layout.astro';
+import Rating from '../../components/Rating.astro';
+import BlogPost from '../../components/BlogPost.astro';
+import { animeData } from '../../data/anime';
+import { posts } from '../../data/posts';
+import {
+    getAnimeBySlug,
+    getRelatedAnime,
+    getProgressPercentage,
+    formatAnimeSlug
+} from '../../utils/anime';
+
+export function getStaticPaths() {
+    return animeData.map(anime => ({
+        params: {
+            slug: formatAnimeSlug(anime.title.english)
+        },
+        props: {
+            anime,
+            relatedPosts: posts.filter(post =>
+                post.anime?.title.english === anime.title.english ||
+                post.tags?.some(tag => anime.tags?.includes(tag))
+            ),
+            relatedAnime: getRelatedAnime(anime, animeData)
+        }
+    }));
+}
+
+interface Props {
+    anime: typeof animeData[0];
+    relatedPosts: typeof posts;
+    relatedAnime: typeof animeData;
+}
+
+const { anime, relatedPosts, relatedAnime } = Astro.props;
+const progressPercentage = getProgressPercentage(anime.progress, anime.totalEpisodes);
+
+const statusColors = {
+    watching: 'bg-blue-900/20 text-blue-400 border-blue-400/20',
+    completed: 'bg-green-900/20 text-green-400 border-green-400/20',
+    planned: 'bg-gray-800/20 text-gray-400 border-gray-400/20',
+    on_hold: 'bg-yellow-900/20 text-yellow-400 border-yellow-400/20',
+    dropped: 'bg-red-900/20 text-red-400 border-red-400/20',
+} as const;
+---
+
+<Layout title={anime.title.english}>
+    <div class="min-h-[20rem] bg-semi-transparent relative mb-8">
+        {/* Background Cover */}
+        <div
+                class="absolute inset-0 bg-cover bg-center opacity-10"
+                style={`background-image: url(${anime.cover})`}
+        >
+            <div class="absolute inset-0 bg-gradient-to-t from-main-bg via-main-bg/95 to-transparent"></div>
+        </div>
+
+        {/* Content */}
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative pt-8">
+            <div class="grid grid-cols-[auto,1fr] gap-8">
+                {/* Cover */}
+                <div class="w-48">
+                    <div class="bg-semi-transparent rounded-lg p-3">
+                        <img
+                                src={anime.cover}
+                                alt={anime.title.english}
+                                class="w-full aspect-[7/10] object-cover rounded border border-accent/20"
+                        />
+                    </div>
+                </div>
+
+                {/* Title and Quick Info */}
+                <div class="pt-4">
+                    <h1 class="text-3xl font-medium mb-2">{anime.title.english}</h1>
+                    <p class="text-lg text-main/60 font-mono mb-4">{anime.title.japanese}</p>
+
+                    <div class="flex items-center gap-4 mb-6">
+            <span class={`px-3 py-1 rounded-full text-sm font-mono border ${statusColors[anime.status]}`}>
+              {anime.status.replace('_', ' ')}
+            </span>
+                        {anime.rating && (
+                                <div class="flex items-center gap-2">
+                                    <Rating value={anime.rating} />
+                                </div>
+                        )}
+                    </div>
+
+                    {anime.tags && (
+                            <div class="flex flex-wrap gap-2">
+                                {anime.tags.map(tag => (
+                                        <a
+                                                href={`/library?tag=${tag}`}
+                                                class="text-sm font-mono bg-accent/10 px-2 py-1 rounded-full text-accent/80 hover:bg-accent/20 transition-colors"
+                                        >
+                                            #{tag}
+                                        </a>
+                                ))}
+                            </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-[1fr,280px] gap-8">
+            <main>
+                {/* Progress Section */}
+                <section class="bg-semi-transparent rounded-lg p-4 mb-8">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="font-mono text-sm">
+                            <span class="text-main/60">Progress:</span>
+                            <span class="text-accent ml-2">{anime.progress}</span>
+                            <span class="text-main/40">/</span>
+                            <span class="text-main/60">{anime.totalEpisodes}</span>
+                        </div>
+                        {anime.status === 'watching' && (
+                                <button class="text-sm font-mono text-accent hover:text-accent/80 transition-colors">
+                                    Update Progress
+                                </button>
+                        )}
+                    </div>
+                    <div class="h-2 bg-accent/10 rounded-full overflow-hidden">
+                        <div
+                                class="h-full bg-accent relative"
+                                style={`width: ${progressPercentage}%`}
+                        >
+                            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-accent-light/20 to-transparent animate-pulse-slow"></div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Watch History */}
+                {anime.watchHistory && (
+                        <section class="bg-semi-transparent rounded-lg p-4 mb-8">
+                            <h2 class="text-lg font-medium mb-4">Watch History</h2>
+                            <div class="relative pl-4 space-y-4">
+                                <div class="absolute top-0 left-1.5 h-full w-px bg-accent/20"></div>
+                                {anime.watchHistory.map(entry => (
+                                        <div class="relative">
+                                            <div class="absolute -left-4 top-1.5 w-3 h-3 rounded-full border-2 border-accent bg-main-bg"></div>
+                                            <div class="font-mono text-sm text-accent/80">{entry.date}</div>
+                                            <div class="text-sm mt-1">
+                                                <span class="text-main/60">Progress: {entry.progress} episodes</span>
+                                                {entry.note && (
+                                                        <p class="text-main/80 mt-1">{entry.note}</p>
+                                                )}
+                                            </div>
+                                        </div>
+                                ))}
+                            </div>
+                        </section>
+                )}
+
+                {/* Stats */}
+                {anime.stats && (
+                        <section class="bg-semi-transparent rounded-lg p-4 mb-8">
+                            <h2 class="text-lg font-medium mb-4">Rating Breakdown</h2>
+                            <div class="space-y-3">
+                                {Object.entries(anime.stats).map(([key, value]) => (
+                                        <div>
+                                            <div class="flex items-center justify-between text-sm mb-1">
+                                                <span class="text-main/60 capitalize">{key}</span>
+                                                <span class="font-mono text-accent">{value}/10</span>
+                                            </div>
+                                            <div class="h-1.5 bg-accent/10 rounded-full overflow-hidden">
+                                                <div
+                                                        class="h-full bg-accent"
+                                                        style={`width: ${(value / 10) * 100}%`}
+                                                ></div>
+                                            </div>
+                                        </div>
+                                ))}
+                            </div>
+                        </section>
+                )}
+
+                {/* Notes */}
+                {anime.notes && (
+                        <section class="bg-semi-transparent rounded-lg p-4 mb-8">
+                            <h2 class="text-lg font-medium mb-4">Notes</h2>
+                            <p class="text-main/80 text-sm leading-relaxed">{anime.notes}</p>
+                        </section>
+                )}
+
+                {/* Related Posts */}
+                {relatedPosts.length > 0 && (
+                        <section class="mb-8">
+                            <h2 class="text-lg font-medium mb-4">Related Posts</h2>
+                            <div class="space-y-4">
+                                {relatedPosts.map(post => (
+                                        <BlogPost post={post} />
+                                ))}
+                            </div>
+                        </section>
+                )}
+            </main>
+
+            {/* Sidebar */}
+            <aside class="space-y-6">
+                {/* Quick Stats */}
+                <div class="bg-semi-transparent rounded-lg p-4">
+                    <h2 class="text-sm font-mono text-accent mb-3">Information</h2>
+                    <div class="space-y-2 text-sm">
+                        {anime.startDate && (
+                                <div class="flex justify-between">
+                                    <span class="text-main/60">Started</span>
+                                    <span class="font-mono">{anime.startDate}</span>
+                                </div>
+                        )}
+                        {anime.completedDate && (
+                                <div class="flex justify-between">
+                                    <span class="text-main/60">Completed</span>
+                                    <span class="font-mono">{anime.completedDate}</span>
+                                </div>
+                        )}
+                        {anime.timesRewatched && (
+                                <div class="flex justify-between">
+                                    <span class="text-main/60">Rewatched</span>
+                                    <span class="font-mono">{anime.timesRewatched}x</span>
+                                </div>
+                        )}
+                        {anime.season && (
+                                <div class="flex justify-between">
+                                    <span class="text-main/60">Season</span>
+                                    <span class="font-mono capitalize">
+                  {anime.season.season} {anime.season.year}
+                </span>
+                                </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Related Anime */}
+                {relatedAnime.length > 0 && (
+                        <div class="bg-semi-transparent rounded-lg p-4">
+                            <h2 class="text-sm font-mono text-accent mb-3">Similar Anime</h2>
+                            <div class="space-y-3">
+                                {relatedAnime.map(related => (
+                                        <a
+                                                href={`/library/${formatAnimeSlug(related.title.english)}`}
+                                                class="flex gap-3 group"
+                                        >
+                                            <img
+                                                    src={related.cover}
+                                                    alt={related.title.english}
+                                                    class="w-12 h-16 object-cover rounded border border-accent/20 group-hover:border-accent/40 transition-all"
+                                            />
+                                            <div class="flex-1 min-w-0">
+                                                <h3 class="text-sm font-medium leading-snug truncate group-hover:text-accent transition-colors">
+                                                    {related.title.english}
+                                                </h3>
+                                                {related.rating && (
+                                                        <div class="text-xs font-mono text-accent mt-1">
+                                                            {related.rating}/10
+                                                        </div>
+                                                )}
+                                            </div>
+                                        </a>
+                                ))}
+                            </div>
+                        </div>
+                )}
+            </aside>
+        </div>
+    </div>
+</Layout>
+
+<style>
+    @keyframes pulse-slow {
+        0%, 100% { opacity: 0; }
+        50% { opacity: 1; }
+    }
+</style>

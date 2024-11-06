@@ -1,36 +1,99 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import TagCloud from '../../components/TagCloud.astro';
+import BlogPost from '../../components/BlogPost.astro';
+import { posts } from '../../data/posts';
 
-const posts = [
-  {
-    title: "The Evolution of Time Travel in Anime",
-    tags: ["analysis", "sci-fi", "steins-gate"]
-  },
-  {
-    title: "Visual Storytelling in Spice and Wolf",
-    tags: ["analysis", "romance", "economics"]
-  }
-];
+// Calculate tag stats
+const tagCounts = posts
+    .flatMap(post => post.tags)
+    .reduce((acc, tag) => {
+      acc[tag] = (acc[tag] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
 
-const tagCounts = posts.flatMap(post => post.tags)
-  .reduce((acc, tag) => {
-    acc[tag] = (acc[tag] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+// Get posts count by tag and type
+const tagStats = Object.entries(tagCounts).map(([tag, count]) => ({
+  name: tag,
+  count,
+  reviews: posts.filter(p => p.type === 'review' && p.tags.includes(tag)).length,
+  analysis: posts.filter(p => p.type === 'analysis' && p.tags.includes(tag)).length
+})).sort((a, b) => b.count - a.count);
 
-const tags = Object.entries(tagCounts)
-  .map(([name, count]) => ({ name, count }))
-  .sort((a, b) => b.count - a.count);
+// Calculate sizes based on count
+function getTagSize(count: number) {
+  const max = Math.max(...Object.values(tagCounts));
+  const min = Math.min(...Object.values(tagCounts));
+  const normalized = (count - min) / (max - min);
+  if (normalized < 0.2) return 'text-sm';
+  if (normalized < 0.4) return 'text-base';
+  if (normalized < 0.6) return 'text-lg';
+  if (normalized < 0.8) return 'text-xl';
+  return 'text-2xl';
+}
 ---
 
 <Layout title="Tags">
   <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-    <header class="mb-12">
-      <h1 class="text-3xl font-medium mb-4">Tags</h1>
-      <p class="text-main/60 font-mono">Browse posts by topic</p>
-    </header>
+    <h1 class="text-3xl font-medium mb-8">Tags</h1>
 
-    <TagCloud tags={tags} />
+    <div class="grid sm:grid-cols-2 gap-4 mb-8">
+      <div class="bg-semi-transparent rounded-lg p-4">
+        <h2 class="text-sm font-mono text-accent mb-2">Tag Stats</h2>
+        <dl class="space-y-1 text-sm">
+          <div class="flex justify-between">
+            <dt class="text-main/60">Total Tags</dt>
+            <dd class="font-mono">{tagStats.length}</dd>
+          </div>
+          <div class="flex justify-between">
+            <dt class="text-main/60">Most Used</dt>
+            <dd class="font-mono">#{tagStats[0].name} ({tagStats[0].count})</dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="bg-semi-transparent rounded-lg p-4">
+        <h2 class="text-sm font-mono text-accent mb-2">Popular Tags</h2>
+        <div class="flex flex-wrap gap-2">
+          {tagStats.slice(0, 6).map(tag => (
+              <a
+                  href={`/tags/${tag.name}`}
+                  class="text-xs font-mono bg-accent/10 px-2 py-0.5 rounded-full text-accent/80 hover:bg-accent/20 transition-colors"
+              >
+                #{tag.name} <span class="text-main/40">({tag.count})</span>
+              </a>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-semi-transparent rounded-lg p-4 mb-8">
+      <div class="flex flex-wrap gap-4">
+        {tagStats.map(tag => (
+            <a
+                href={`/tags/${tag.name}`}
+                class="group flex flex-col items-start"
+            >
+            <span class={`font-mono text-accent/70 group-hover:text-accent transition-colors ${getTagSize(tag.count)}`}>
+              #{tag.name}
+            </span>
+              <span class="text-xs text-main/40 mt-0.5">
+              {tag.count} posts ({tag.reviews} reviews, {tag.analysis} analysis)
+            </span>
+            </a>
+        ))}
+      </div>
+    </div>
+
+    {/* Example Posts */}
+    <div class="space-y-4">
+      <h2 class="text-lg font-medium">Recent Tagged Posts</h2>
+      {posts
+          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+          .slice(0, 3)
+          .map(post => (
+              <BlogPost post={post} />
+          ))
+      }
+    </div>
   </div>
 </Layout>

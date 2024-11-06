@@ -1,85 +1,327 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import AnimeCard from '../components/AnimeCard.astro';
-import Stats from '../components/Stats.astro';
+import EnhancedStats from '../components/EnhancedStats.astro';
 import BlogPost from '../components/BlogPost.astro';
-import ReviewCard from '../components/ReviewCard.astro';
+import TagStats from '../components/TagStats.astro';
+import Footer from '../components/Footer.astro';
+import { animeData } from '../data/anime';
+import { posts } from '../data/posts';
+import { calculateStats, getTagCounts } from '../utils/stats';
 
-const stats = {
-  watching: 25,
-  completed: 206,
-  planned: 236,
-  onHold: 42,
-  dropped: 11,
-  totalEpisodes: 4892
+// Stats and Metrics
+const stats = calculateStats(animeData);
+const tagCounts = getTagCounts(animeData);
+
+// Get watching, sorted by progress percentage
+const watching = animeData
+    .filter(anime => anime.status === 'watching')
+    .map(anime => ({
+      ...anime,
+      progressPercentage: (anime.progress / anime.totalEpisodes) * 100
+    }))
+    .sort((a, b) => b.progressPercentage - a.progressPercentage);
+
+// Get recently completed
+const recentlyCompleted = animeData
+    .filter(anime => anime.status === 'completed')
+    .sort((a, b) => (b.rating || 0) - (a.rating || 0))
+    .slice(0, 5);
+
+// Content categorization
+const latestPosts = posts
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 3);
+
+const latestReviews = posts
+    .filter(post => post.type === 'review')
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 3);
+
+const technicalAnalysis = posts
+    .filter(post =>
+        post.type === 'analysis' &&
+        post.tags.some(tag => [
+          'animation',
+          'production',
+          'technical',
+          'cinematography',
+          'composition',
+          'color-theory',
+          'storyboarding'
+        ].includes(tag))
+    )
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 3);
+
+// Monthly stats for current month
+const currentMonth = new Date().toLocaleString('default', { month: 'long' });
+const monthlyStats = {
+  completed: animeData.filter(anime =>
+      anime.status === 'completed' &&
+      new Date(anime.completedDate as string).getMonth() === new Date().getMonth()
+  ).length,
+  episodes: animeData
+      .filter(anime => anime.status === 'watching' || anime.status === 'completed')
+      .reduce((acc, anime) => acc + anime.progress, 0),
+  averageRating: recentlyCompleted
+      .reduce((acc, anime) => acc + (anime.rating || 0), 0) / recentlyCompleted.length,
+  posts: posts
+      .filter(post => new Date(post.date).getMonth() === new Date().getMonth())
+      .length
 };
-
-const currentlyWatching = [
-  {
-    title: {
-      romaji: "Steins;Gate",
-      english: "Steins;Gate",
-      japanese: "シュタインズ・ゲート"
-    },
-    cover: "https://cdn.myanimelist.net/images/anime/5/73199.jpg",
-    status: "watching",
-    progress: 12,
-    totalEpisodes: 24,
-    rating: 10
-  }
-];
-
-const recentPosts = [
-  {
-    title: "The Evolution of Time Travel in Anime",
-    date: "2024-01-15",
-    excerpt: "From Steins;Gate to The Girl Who Leapt Through Time, exploring how anime handles temporal mechanics and their narrative implications.",
-    slug: "time-travel-in-anime",
-    tags: ["analysis", "sci-fi", "steins-gate"]
-  },
-  {
-    title: "Visual Storytelling in Spice and Wolf",
-    date: "2024-01-10",
-    excerpt: "Breaking down how Spice and Wolf uses subtle visual cues and medieval economics to build its unique romantic narrative.",
-    slug: "spice-and-wolf-visual-storytelling",
-    tags: ["analysis", "romance", "economics"]
-  }
-];
-
 ---
 
 <Layout title="Home">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="grid grid-cols-1 lg:grid-cols-[2fr,1fr] gap-8">
-      <div>
-        <section class="mb-12">
-          <h2 class="text-lg font-mono text-accent mb-4">Statistics</h2>
-          <Stats stats={stats} />
-        </section>
+    <div class="grid grid-cols-1 lg:grid-cols-[1fr,2fr,1fr] gap-6">
+      {/* Left Sidebar - Quick Stats & Current Progress */}
+      <div class="space-y-6">
+        {/* Monthly Overview */}
+        <div class="bg-semi-transparent rounded-lg p-4">
+          <h2 class="text-sm font-mono text-accent mb-3">
+            <a href={`/library?month=${currentMonth.toLowerCase()}`} class="hover:text-accent/80">
+              {currentMonth} Overview
+            </a>
+          </h2>
+          <dl class="grid grid-cols-2 gap-4 text-sm">
+            <a href="/library?status=completed" class="group">
+              <dt class="text-main/60 group-hover:text-main/80">Completed</dt>
+              <dd class="text-2xl font-mono text-accent group-hover:text-accent/80 mt-1">
+                {monthlyStats.completed}
+              </dd>
+            </a>
+            <a href="/library" class="group">
+              <dt class="text-main/60 group-hover:text-main/80">Episodes</dt>
+              <dd class="text-2xl font-mono text-accent group-hover:text-accent/80 mt-1">
+                {monthlyStats.episodes}
+              </dd>
+            </a>
+            <a href="/library?sort=rating" class="group">
+              <dt class="text-main/60 group-hover:text-main/80">Avg Rating</dt>
+              <dd class="text-2xl font-mono text-accent group-hover:text-accent/80 mt-1">
+                {monthlyStats.averageRating.toFixed(1)}
+              </dd>
+            </a>
+            <a href="/blog" class="group">
+              <dt class="text-main/60 group-hover:text-main/80">Posts</dt>
+              <dd class="text-2xl font-mono text-accent group-hover:text-accent/80 mt-1">
+                {monthlyStats.posts}
+              </dd>
+            </a>
+          </dl>
+        </div>
 
-        <section class="mb-12">
-          <h2 class="text-lg font-mono text-accent mb-4">Currently Watching</h2>
+        {/* Library Stats */}
+        <div class="bg-semi-transparent rounded-lg p-4">
+          <h2 class="text-sm font-mono text-accent mb-3">
+            <a href="/library" class="hover:text-accent/80">Library Stats</a>
+          </h2>
+          <EnhancedStats stats={stats} />
+        </div>
+
+        {/* Top Genres/Tags */}
+        <div class="bg-semi-transparent rounded-lg p-4">
+          <h2 class="text-sm font-mono text-accent mb-3">
+            <a href="/tags" class="hover:text-accent/80">Top Genres</a>
+          </h2>
+          <TagStats tagCounts={tagCounts} />
+        </div>
+
+        {/* Currently Reading/Other Media */}
+        <div class="bg-semi-transparent rounded-lg p-4">
+          <h2 class="text-sm font-mono text-accent mb-3">
+            <a href="/other-media" class="hover:text-accent/80">Also Following</a>
+          </h2>
+          <div class="space-y-3 text-sm">
+            <a href="/other-media?type=manga" class="block group">
+              <div class="text-main/60 group-hover:text-main/80 mb-1">Manga</div>
+              <div class="font-medium group-hover:text-accent">Chainsaw Man</div>
+              <div class="text-xs text-main/40 group-hover:text-main/60">Ch. 147 - Latest</div>
+            </a>
+            <a href="/other-media?type=light-novel" class="block group">
+              <div class="text-main/60 group-hover:text-main/80 mb-1">Light Novel</div>
+              <div class="font-medium group-hover:text-accent">86: Eighty Six</div>
+              <div class="text-xs text-main/40 group-hover:text-main/60">Vol. 4 - In Progress</div>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div class="space-y-8">
+        {/* Currently Watching */}
+        <section>
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-medium">
+              <a href="/library?status=watching" class="hover:text-accent">Currently Watching</a>
+            </h2>
+            <span class="text-sm font-mono text-main/60">{watching.length} active</span>
+          </div>
           <div class="grid gap-4">
-            {currentlyWatching.map(anime => (
-              <AnimeCard {...anime} />
+            {watching.map(anime => (
+                <a
+                    href={`/library/${anime.title.english.toLowerCase().replace(/ /g, '-')}`}
+                    class="block bg-semi-transparent rounded-lg p-4 hover:ring-1 hover:ring-accent transition-all"
+                >
+                  <div class="flex gap-4">
+                    <img
+                        src={anime.cover}
+                        alt={anime.title.english}
+                        class="w-16 h-24 object-cover rounded"
+                    />
+                    <div class="flex-1 min-w-0">
+                      <h3 class="font-medium truncate">{anime.title.english}</h3>
+                      <p class="text-sm text-main/60 font-mono mt-1">
+                        Progress: {anime.progress}/{anime.totalEpisodes}
+                      </p>
+                      <div class="mt-2 h-1.5 bg-accent/10 rounded-full overflow-hidden">
+                        <div
+                            class="h-full bg-accent"
+                            style={`width: ${anime.progressPercentage}%`}
+                        ></div>
+                      </div>
+                    </div>
+                    {anime.rating && (
+                        <div class="text-lg font-mono text-accent">{anime.rating}</div>
+                    )}
+                  </div>
+                </a>
             ))}
           </div>
         </section>
 
+        {/* Latest Posts Grid */}
         <section>
-          <h2 class="text-lg font-mono text-accent mb-4">Recent Posts</h2>
-          <div>
-            {recentPosts.map(post => (
-              <BlogPost {...post} />
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-medium">
+              <a href="/blog" class="hover:text-accent">Latest Content</a>
+            </h2>
+            <a href="/blog" class="text-sm font-mono text-main/60 hover:text-accent">
+              view all →
+            </a>
+          </div>
+          <div class="grid sm:grid-cols-2 gap-4">
+            {latestPosts.map(post => (
+                <BlogPost post={post} />
+            ))}
+          </div>
+        </section>
+
+        {/* Recent Reviews */}
+        <section>
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-medium">
+              <a href="/blog?type=review" class="hover:text-accent">Recent Reviews</a>
+            </h2>
+            <a href="/blog?type=review" class="text-sm font-mono text-main/60 hover:text-accent">
+              view all →
+            </a>
+          </div>
+          <div class="grid gap-4">
+            {latestReviews.map(post => (
+                <BlogPost post={post} />
             ))}
           </div>
         </section>
       </div>
 
-      <div>
-        <section>
-          <h2 class="text-lg font-mono text-accent mb-4">Recent shows</h2>
-        </section>
+      {/* Right Sidebar */}
+      <div class="space-y-6">
+        {/* Technical Analysis */}
+        <div class="bg-semi-transparent rounded-lg p-4">
+          <h2 class="text-sm font-mono text-accent mb-3">
+            <a href="/blog?type=analysis&tag=technical" class="hover:text-accent/80">
+              Technical Deep Dives
+            </a>
+          </h2>
+          <div class="space-y-4">
+            {technicalAnalysis.map(post => (
+                <a
+                    href={`/blog/${post.slug}`}
+                    class="block group"
+                >
+                  <h3 class="font-medium leading-snug group-hover:text-accent transition-colors">
+                    {post.title}
+                  </h3>
+                  <div class="text-xs text-main/60 mt-1">{post.readingTime}</div>
+                  <div class="mt-2 flex flex-wrap gap-1">
+                    {post.tags.map(tag => (
+                        <a
+                            href={`/tags/${tag}`}
+                            class="text-xs font-mono bg-accent/10 px-1.5 py-0.5 rounded-full text-accent/80 hover:bg-accent/20 transition-colors"
+                            onClick={e => e.stopPropagation()}
+                        >
+                          #{tag}
+                        </a>
+                    ))}
+                  </div>
+                </a>
+            ))}
+          </div>
+        </div>
+
+        {/* Recently Completed */}
+
+        <div class="bg-semi-transparent rounded-lg p-4">
+          <h2 class="text-sm font-mono text-accent mb-2">
+            <a href="/library?status=completed" class="hover:text-accent/80">Recently Completed</a>
+          </h2>
+          <div class="space-y-2">
+            {recentlyCompleted.map(anime => (
+                <a
+                    href={`/library/${anime.title.english.toLowerCase().replace(/ /g, '-')}`}
+                    class="flex gap-2 group"
+                >
+                  <img
+                      src={anime.cover}
+                      alt={anime.title.english}
+                      class="w-10 h-14 object-cover rounded flex-shrink-0"
+                  />
+                  <div class="min-w-0">
+                    <h3 class="font-medium leading-tight text-sm group-hover:text-accent transition-colors truncate">
+                      {anime.title.english}
+                    </h3>
+                    <div class="text-xs font-mono text-accent mt-0.5">
+                      {anime.rating}/10
+                    </div>
+                    {anime.tags && (
+                        <div class="flex gap-1 mt-1 flex-wrap">
+                          {anime.tags.slice(0, 2).map(tag => (
+                              <a
+                                  href={`/tags/${tag}`}
+                                  class="text-xs font-mono bg-accent/10 px-1.5 py-0.5 rounded-full text-accent/80 hover:bg-accent/20 transition-colors"
+                                  onClick={e => e.stopPropagation()}
+                              >
+                                #{tag}
+                              </a>
+                          ))}
+                        </div>
+                    )}
+                  </div>
+                </a>
+            ))}
+          </div>
+        </div>
+
+        {/* Quick Navigation */}
+        <div class="bg-semi-transparent rounded-lg p-4">
+          <h2 class="text-sm font-mono text-accent mb-3">Quick Links</h2>
+          <div class="space-y-2 text-sm">
+            <a href="/library?status=watching" class="block text-main/60 hover:text-accent">
+              → All Currently Watching
+            </a>
+            <a href="/library?status=completed" class="block text-main/60 hover:text-accent">
+              → Completed Shows
+            </a>
+            <a href="/blog?type=review" class="block text-main/60 hover:text-accent">
+              → All Reviews
+            </a>
+            <a href="/blog?type=analysis" class="block text-main/60 hover:text-accent">
+              → Technical Analysis
+            </a>
+          </div>
+        </div>
       </div>
     </div>
   </div>

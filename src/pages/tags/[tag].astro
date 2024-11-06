@@ -1,48 +1,193 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import BlogPost from '../../components/BlogPost.astro';
+import { posts } from '../../data/posts';
+import { animeData } from '../../data/anime';
 
 export function getStaticPaths() {
-  const posts = [
-    {
-      title: "The Evolution of Time Travel in Anime",
-      date: "2024-01-15",
-      excerpt: "Exploring how anime's approach to time travel narratives has evolved.",
-      slug: "time-travel-in-anime",
-      tags: ["analysis", "sci-fi", "steins-gate"]
-    },
-    {
-      title: "Visual Storytelling in Spice and Wolf",
-      date: "2024-01-10",
-      excerpt: "Breaking down how Spice and Wolf uses subtle visual cues.",
-      slug: "visual-storytelling-spice-wolf",
-      tags: ["analysis", "romance", "economics"]
-    }
-  ];
-
   const tags = [...new Set(posts.flatMap(post => post.tags))];
 
   return tags.map(tag => ({
     params: { tag },
     props: {
       tag,
-      posts: posts.filter(post => post.tags.includes(tag))
+      posts: posts.filter(post => post.tags.includes(tag)),
+      relatedAnime: animeData.filter(anime => anime.tags?.includes(tag))
     }
   }));
 }
 
-const { tag, posts } = Astro.props;
+interface Props {
+  tag: string;
+  posts: typeof posts;
+  relatedAnime: typeof animeData;
+}
+
+const { tag, posts: tagPosts, relatedAnime } = Astro.props;
+
+// Calculate tag statistics
+const stats = {
+  total: tagPosts.length,
+  reviews: tagPosts.filter(p => p.type === 'review').length,
+  analysis: tagPosts.filter(p => p.type === 'analysis').length,
+  recentPosts: tagPosts.filter(p =>
+    new Date(p.date).getTime() > Date.now() - 30 * 24 * 60 * 60 * 1000
+  ).length,
+  avgRating: relatedAnime
+    .filter(a => a.rating)
+    .reduce((acc, curr) => acc + (curr.rating || 0), 0) /
+    relatedAnime.filter(a => a.rating).length || 0,
+  animeCount: relatedAnime.length
+};
+
+// Get related tags (tags that appear alongside this tag)
+const relatedTags = [...new Set(
+  tagPosts.flatMap(post =>
+    post.tags.filter(t => t !== tag)
+  )
+)].slice(0, 6);
+
+// Sort posts by date
+const sortedPosts = [...tagPosts].sort(
+  (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+);
+
+// Get highlighted anime for this tag
+const highlightedAnime = relatedAnime
+  .filter(anime => anime.rating && anime.rating >= 8)
+  .sort((a, b) => (b.rating || 0) - (a.rating || 0))
+  .slice(0, 3);
 ---
 
 <Layout title={`#${tag} posts`}>
   <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-    <header class="mb-12">
-      <h1 class="text-3xl font-medium mb-4">Posts tagged with <span class="text-accent">#{tag}</span></h1>
-      <p class="text-main/60 font-mono">{posts.length} post{posts.length === 1 ? '' : 's'}</p>
+    <header class="mb-8">
+      <div class="flex items-baseline gap-4 mb-2">
+        <h1 class="text-3xl font-medium">#{tag}</h1>
+        <div class="text-sm font-mono text-main/60">
+          {stats.total} post{stats.total === 1 ? '' : 's'}
+        </div>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        {relatedTags.map(relatedTag => (
+          <a
+            href={`/tags/${relatedTag}`}
+            class="text-sm font-mono bg-accent/10 px-2 py-0.5 rounded-full text-accent/80 hover:bg-accent/20 transition-colors"
+          >
+            #{relatedTag}
+          </a>
+        ))}
+      </div>
     </header>
 
-    <div class="space-y-12">
-      {posts.map(post => <BlogPost {...post} />)}
+    <div class="grid sm:grid-cols-2 gap-4 mb-8">
+      <div class="bg-semi-transparent rounded-lg p-4">
+        <h2 class="text-sm font-mono text-accent mb-2">Tag Statistics</h2>
+        <dl class="space-y-1 text-sm">
+          <div class="flex justify-between">
+            <dt class="text-main/60">Total Posts</dt>
+            <dd class="font-mono">{stats.total}</dd>
+          </div>
+          <div class="flex justify-between">
+            <dt class="text-main/60">Reviews</dt>
+            <dd class="font-mono">{stats.reviews}</dd>
+          </div>
+          <div class="flex justify-between">
+            <dt class="text-main/60">Analysis</dt>
+            <dd class="font-mono">{stats.analysis}</dd>
+          </div>
+          <div class="flex justify-between">
+            <dt class="text-main/60">Recent (30d)</dt>
+            <dd class="font-mono">{stats.recentPosts}</dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="bg-semi-transparent rounded-lg p-4">
+        <h2 class="text-sm font-mono text-accent mb-2">Anime Statistics</h2>
+        <dl class="space-y-1 text-sm">
+          <div class="flex justify-between">
+            <dt class="text-main/60">Tagged Anime</dt>
+            <dd class="font-mono">{stats.animeCount}</dd>
+          </div>
+          {stats.avgRating > 0 && (
+            <div class="flex justify-between">
+              <dt class="text-main/60">Average Rating</dt>
+              <dd class="font-mono">{stats.avgRating.toFixed(1)}/10</dd>
+            </div>
+          )}
+        </dl>
+      </div>
+    </div>
+
+    {highlightedAnime.length > 0 && (
+      <section class="mb-8">
+        <h2 class="text-lg font-medium mb-4">Highlighted {tag} Anime</h2>
+        <div class="grid sm:grid-cols-3 gap-4">
+          {highlightedAnime.map(anime => (
+            <a
+              href={`/library/${anime.title.english.toLowerCase().replace(/ /g, '-')}`}
+              class="bg-semi-transparent rounded-lg overflow-hidden group"
+            >
+              <div class="aspect-[3/4] relative">
+                <img
+                  src={anime.cover}
+                  alt={anime.title.english}
+                  class="absolute inset-0 w-full h-full object-cover transition-transform group-hover:scale-105"
+                />
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                <div class="absolute bottom-0 p-3">
+                  <h3 class="font-medium text-sm leading-tight group-hover:text-accent transition-colors">
+                    {anime.title.english}
+                  </h3>
+                  <p class="text-xs text-main/60 font-mono mt-1">
+                    Rating: {anime.rating}/10
+                  </p>
+                </div>
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+
+    <div class="space-y-4">
+      <div class="flex items-center justify-between">
+        <h2 class="text-lg font-medium">All Posts</h2>
+        <div class="flex gap-3">
+          <a
+            href={`/tags/${tag}`}
+            class:list={[
+              'px-3 py-1.5 rounded-full font-mono text-sm transition-colors',
+              'bg-accent text-main'
+            ]}
+          >
+            All ({stats.total})
+          </a>
+          <a
+            href={`/tags/${tag}?type=review`}
+            class:list={[
+              'px-3 py-1.5 rounded-full font-mono text-sm transition-colors',
+              'bg-accent/10 text-accent hover:bg-accent/20'
+            ]}
+          >
+            Reviews ({stats.reviews})
+          </a>
+          <a
+            href={`/tags/${tag}?type=analysis`}
+            class:list={[
+              'px-3 py-1.5 rounded-full font-mono text-sm transition-colors',
+              'bg-accent/10 text-accent hover:bg-accent/20'
+            ]}
+          >
+            Analysis ({stats.analysis})
+          </a>
+        </div>
+      </div>
+
+      {sortedPosts.map(post => (
+        <BlogPost post={post} />
+      ))}
     </div>
   </div>
 </Layout>

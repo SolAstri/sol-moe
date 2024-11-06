@@ -1,0 +1,24 @@
+---
+// Components/TagStats.astro
+interface Props {
+    tagCounts: Record<string, number>;
+}
+
+const { tagCounts } = Astro.props;
+
+const sortedTags = Object.entries(tagCounts)
+    .sort(([,a], [,b]) => b - a)
+    .slice(0, 8);
+---
+
+<div class="space-y-1">
+    {sortedTags.map(([tag, count]) => (
+            <a
+                    href={`/library?tag=${tag}`}
+                    class="flex justify-between items-center text-sm hover:bg-accent/5 px-2 py-0.5 rounded transition-colors group"
+            >
+                <span class="text-main/60 group-hover:text-main/80">#{tag}</span>
+                <span class="font-mono group-hover:text-accent">{count}</span>
+            </a>
+    ))}
+</div>

@@ -1,0 +1,27 @@
+---
+// Components/EnhancedStats.astro
+interface Props {
+    stats: {
+        watching: number;
+        completed: number;
+        planned: number;
+        onHold: number;
+        dropped: number;
+        totalEpisodes: number;
+    };
+}
+
+const { stats } = Astro.props;
+---
+
+<div class="space-y-1">
+    {Object.entries(stats).map(([key, value]) => (
+            <a
+                    href={key === 'totalEpisodes' ? '/library' : `/library?status=${key}`}
+                    class="flex justify-between items-center text-sm hover:bg-accent/5 px-2 py-0.5 rounded transition-colors group"
+            >
+                <span class="text-main/60 group-hover:text-main/80">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
+                <span class="font-mono group-hover:text-accent">{value}</span>
+            </a>
+    ))}
+</div>

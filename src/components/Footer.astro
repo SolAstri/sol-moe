@@ -1,0 +1,31 @@
+---
+// Footer.astro
+interface Props {
+    className?: string;
+}
+
+const { className = '' } = Astro.props;
+---
+
+<footer class={`border-t border-accent-10 bg-semi-transparent mt-auto relative ${className}`}>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div class="font-mono text-sm text-main/60">
+                Technical analysis & anime reviews by{' '}
+                <a
+                        href="https://solastri.space"
+                        class="text-accent hover:text-accent/80 transition-colors"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                >
+                    Sol Astri
+                </a>
+            </div>
+            <!--<div class="flex flex-wrap gap-6 text-sm text-main/60">-->
+            <!--    <a href="https://astri.codes" class="hover:text-accent transition-colors">Code</a>-->
+            <!--    <a href="https://danielsol.dev" class="hover:text-accent transition-colors">Portfolio</a>-->
+            <!--    <a href="https://github.com/yourusername" class="hover:text-accent transition-colors">GitHub</a>-->
+            <!--</div>-->
+        </div>
+    </div>
+</footer>
